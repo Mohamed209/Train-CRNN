@@ -5,7 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
-
+venv/
+dataset/generated_data/
+demo.py
+demoo.py
 # Distribution / packaging
 .Python
 env/
