@@ -4,6 +4,7 @@ import cv2
 import PIL
 import uuid
 import re
+import random
 import numpy as np
 from bidi.algorithm import get_display
 from trdg.generators import GeneratorFromStrings
@@ -52,6 +53,7 @@ def generate_english_lines():
         for line in f.readlines():
             if line.strip():
                 eng_lines.append(line)
+        random.shuffle(eng_lines)
 
 
 def generate_mixed_lines():
@@ -59,6 +61,7 @@ def generate_mixed_lines():
         for line in f.readlines():
             if line.strip():
                 mixed_lines.append(line)
+        random.shuffle(mixed_lines)
         mixed_lines_no_res.extend(mixed_lines)
         for i in range(len(mixed_lines)):
             mixed_lines[i] = arabic_reshaper.reshape(mixed_lines[i])
@@ -76,7 +79,7 @@ generate_mixed_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=1000,
+    count=500000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -87,7 +90,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=1000,
+    count=500000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
