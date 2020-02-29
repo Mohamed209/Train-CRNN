@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import os
+import string
 import pyarabic.araby as araby
 import tensorflow as tf
 from tensorflow.python.client import device_lib
@@ -21,7 +22,7 @@ print(device_lib.list_local_devices())
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
-letters = ' '+araby.LETTERS
+letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 
 
 def labels_to_text(labels):
@@ -47,7 +48,7 @@ img_h = 32
 img_w = 432
 downsample_factor = 4
 DATA_PATH = '../dataset/generated_data/'
-data = sorted(os.listdir())
+data = sorted(os.listdir(DATA_PATH))
 images = np.zeros(shape=(len(data)//2, img_h, img_w, 1))
 label_length = np.zeros((len(data)//2, 1), dtype=np.int)
 input_length = np.ones((len(data)//2, 1)) * (img_w // downsample_factor - 2)
@@ -83,12 +84,8 @@ for line in text:
     textnum.append(text_to_labels(data))
 for i in range(len(textnum)):
     gt_text.append(textnum[i])
-gt_text
-
 
 gt_padded_txt = pad_sequences(gt_text, maxlen=40, padding='post', value=0)
-gt_padded_txt
-
 
 print("images >>", images.shape)
 print("text >>", gt_padded_txt.shape)
@@ -173,12 +170,12 @@ train_model = Model(
 
 
 batch_size = 128
-epochs = 1000
-adam = optimizers.adam(lr=1e-4, momentum=0.9, decay=1e-1 / epochs)
+epochs = 200
+adam = optimizers.adam(lr=1e-4, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=100)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=50)
 train_model.fit(x=[xtrain, ytrain, train_input_length, train_label_length],
                 y=np.zeros(ytrain.shape[0]),
                 validation_data=(
