@@ -79,7 +79,7 @@ generate_mixed_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=100000,
+    count=500000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -90,7 +90,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=150000,
+    count=500000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
