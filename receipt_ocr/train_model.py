@@ -169,13 +169,13 @@ train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 
 
-batch_size = 128
-epochs = 200
+batch_size = 64
+epochs = 150
 adam = optimizers.adam(lr=1e-4, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=50)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit(x=[xtrain, ytrain, train_input_length, train_label_length],
                 y=np.zeros(ytrain.shape[0]),
                 validation_data=(

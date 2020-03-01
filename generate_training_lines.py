@@ -12,7 +12,7 @@ from trdg.utils import add_parallel_light
 from scipy.stats import norm
 from PIL import Image
 from data_loader import pull_wikipedia_content
-
+from tqdm import tqdm
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.3, 0.7]
 INV_DISTRIBUTION = [1, 0]
@@ -79,7 +79,7 @@ generate_mixed_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=500000,
+    count=100000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -90,7 +90,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=500000,
+    count=150000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -98,8 +98,8 @@ mixed_generator = GeneratorFromStrings(
     background_type=np.random.choice(background_type),
     text_color=np.random.choice(text_color)
 )
-print("started generating lines :)")
-for img, lbl in english_generator:
+print("started generating english lines :)")
+for img, lbl in tqdm(english_generator):
     if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
         img = add_fake_shdows(img)
     elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
@@ -109,7 +109,8 @@ for img, lbl in english_generator:
     img.save(SAVE_PATH+ID+'.png')
     with open(SAVE_PATH+ID+'.txt', 'w', encoding='utf-8') as label:
         label.writelines(lbl)
-for img, lbl in mixed_generator:
+print("started generating arabic lines :)")
+for img, lbl in tqdm(mixed_generator):
     if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
         img = add_fake_shdows(img)
     elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
