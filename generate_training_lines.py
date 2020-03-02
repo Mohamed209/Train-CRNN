@@ -13,7 +13,7 @@ from scipy.stats import norm
 from PIL import Image
 from data_loader import pull_wikipedia_content
 from tqdm import tqdm
-import multiprocessing as mp
+from numba import cuda
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.3, 0.7]
 INV_DISTRIBUTION = [1, 0]
@@ -112,11 +112,20 @@ def save_lines(img, lbl):
         label.writelines(lbl)
 
 
+@cuda.jit(device=True)
+def dump_ds(generator):
+    [save_lines(img, lbl) for img, lbl in generator]
+
+
 if __name__ == "__main__":
-    pool = mp.Pool(mp.cpu_count())
     print("started generating english lines :)")
-    [pool.apply(save_lines, args=(img, lbl))
-     for img, lbl in tqdm(english_generator)]
+    dump_ds(english_generator)
     print("started generating arabic lines :)")
-    [pool.apply(save_lines, args=(img, lbl))
-     for img, lbl in tqdm(mixed_generator)]
+    dump_ds(mixed_generator)
+    # pool = mp.Pool(mp.cpu_count())
+    # print("started generating english lines :)")
+    # [pool.apply(save_lines, args=(img, lbl))
+    #  for img, lbl in tqdm(english_generator)]
+    # print("started generating arabic lines :)")
+    # [pool.apply(save_lines, args=(img, lbl))
+    #  for img, lbl in tqdm(mixed_generator)]
