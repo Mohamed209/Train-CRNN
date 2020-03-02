@@ -171,7 +171,7 @@ train_model = Model(
 
 batch_size = 64
 epochs = 150
-adam = optimizers.adam(lr=1e-4, decay=1e-1 / epochs)
+adam = optimizers.adam(lr=1e-5, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
 checkpoint = ModelCheckpoint(
