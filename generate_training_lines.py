@@ -74,9 +74,8 @@ def generate_mixed_lines():
 create N generators and randomly select one for each iteration
 '''
 ####################################################################
-
-generate_english_lines()
 generate_mixed_lines()
+generate_english_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
