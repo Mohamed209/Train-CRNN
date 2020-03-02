@@ -10,6 +10,7 @@ dataset/generated_data/
 receipt_ocr/ckpts/
 demo.py
 demoo.py
+out/
 # Distribution / packaging
 .Python
 env/

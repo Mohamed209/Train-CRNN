@@ -9,7 +9,6 @@ certifi==2019.11.28
 chardet==3.0.4
 docutils==0.15.2
 future==0.18.2
-gensim==3.8.1
 idna==2.9
 jmespath==0.9.5
 numpy==1.16.6
@@ -31,3 +30,5 @@ urllib3==1.25.8
 uuid==1.30
 wikipedia==1.4.0
 Wikipedia-API==0.5.4
+tensorflow-gpu
+keras
