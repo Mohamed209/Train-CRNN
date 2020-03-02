@@ -13,7 +13,7 @@ from scipy.stats import norm
 from PIL import Image
 from data_loader import pull_wikipedia_content
 from tqdm import tqdm
-from numba import cuda
+from joblib import Parallel, delayed
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.3, 0.7]
 INV_DISTRIBUTION = [1, 0]
@@ -79,7 +79,7 @@ generate_english_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=250000,
+    count=250,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -90,7 +90,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=300000,
+    count=300,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -112,16 +112,14 @@ def save_lines(img, lbl):
         label.writelines(lbl)
 
 
-@cuda.jit(device=True)
-def dump_ds(generator):
-    [save_lines(img, lbl) for img, lbl in generator]
-
-
 if __name__ == "__main__":
-    print("started generating english lines :)")
-    dump_ds(english_generator)
+
     print("started generating arabic lines :)")
-    dump_ds(mixed_generator)
+    Parallel(n_jobs=-1)(delayed(save_lines)(img, lbl)
+                        for img, lbl in tqdm(mixed_generator))
+    print("started generating english lines :)")
+    Parallel(n_jobs=-1)(delayed(save_lines)(img, lbl)
+                        for img, lbl in tqdm(english_generator))
     # pool = mp.Pool(mp.cpu_count())
     # print("started generating english lines :)")
     # [pool.apply(save_lines, args=(img, lbl))
