@@ -146,9 +146,9 @@ def save_mixed_lines(img, lbl):
 
 
 if __name__ == "__main__":
-    with Pool(processes=6) as pool:
-        [pool.starmap(save_mixed_lines, args=(img, lbl))
-         for (img, lbl) in tqdm(mixed_generator)]
-    with Pool(processes=6) as pool:
-        [pool.starmap(save_mixed_lines, args=(img, lbl))
-         for (img, lbl) in tqdm(english_generator)]
+    with Pool() as pool:
+        pool.starmap(save_mixed_lines, [(img, lbl)
+                                        for (img, lbl) in tqdm(mixed_generator)])
+    with Pool() as pool:
+        pool.starmap(save_mixed_lines, [(img, lbl)
+                                        for (img, lbl) in tqdm(mixed_generator)])
