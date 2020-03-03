@@ -56,6 +56,7 @@ text = []
 i = 0
 j = 0
 for sample in data:
+    print("loaded >>>", sample)
     if sample.split('.')[-1] == 'png':
         img = cv2.imread(DATA_PATH+sample, cv2.IMREAD_GRAYSCALE)
         # img = cv2.resize(img, (img_w, img_h))
@@ -70,11 +71,6 @@ for sample in data:
             text.append(sent)
             label_length[j] = len(sent[0])
         j += 1
-
-
-# show sample of data
-# plt.imshow(images[6][:, :, -1])
-
 
 # we need number repr for text
 gt_text = []
