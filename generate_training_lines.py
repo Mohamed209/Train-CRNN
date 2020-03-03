@@ -16,7 +16,7 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 import pyarabic.araby as araby
 import string
-import multiprocessing as mp
+from multiprocessing import Pool
 letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.3, 0.7]
@@ -146,9 +146,9 @@ def save_mixed_lines(img, lbl):
 
 
 if __name__ == "__main__":
-    pool1 = mp.Pool(processes=4)
-    [pool1.apply(save_mixed_lines, args=(img, lbl))
-     for (img, lbl) in tqdm(mixed_generator)]
-    pool2 = mp.Pool(processes=4)
-    [pool1.apply(save_mixed_lines, args=(img, lbl))
-     for (img, lbl) in tqdm(english_generator)]
+    with Pool(processes=6) as pool:
+        [pool.apply(save_mixed_lines, args=(img, lbl))
+         for (img, lbl) in tqdm(mixed_generator)]
+    with Pool(processes=6) as pool:
+        [pool.apply(save_mixed_lines, args=(img, lbl))
+         for (img, lbl) in tqdm(english_generator)]
