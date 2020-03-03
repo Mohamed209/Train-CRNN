@@ -19,7 +19,7 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
-sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+#sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
 letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
