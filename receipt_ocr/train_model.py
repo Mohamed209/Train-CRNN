@@ -9,7 +9,6 @@ from keras.activations import relu, sigmoid, softmax
 from keras.models import Model
 from keras.layers import Dense, LSTM, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional
 from keras.preprocessing.sequence import pad_sequences
-import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import os
@@ -17,6 +16,7 @@ import string
 import pyarabic.araby as araby
 import tensorflow as tf
 from tensorflow.python.client import device_lib
+import h5py
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
 #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
@@ -44,45 +44,13 @@ def ctc_lambda_func(args):
 
 
 # data loader
-img_h = 32
-img_w = 432
-downsample_factor = 4
-DATA_PATH = '../dataset/generated_data/'
-data = sorted(os.listdir(DATA_PATH))
-images = np.zeros(shape=(len(data)//2, img_h, img_w, 1))
-label_length = np.zeros((len(data)//2, 1), dtype=np.int)
-input_length = np.ones((len(data)//2, 1)) * (img_w // downsample_factor - 2)
-text = []
-i = 0
-j = 0
-for sample in data:
-    print("loaded >>>", sample)
-    if sample.split('.')[-1] == 'png':
-        img = cv2.imread(DATA_PATH+sample, cv2.IMREAD_GRAYSCALE)
-        # img = cv2.resize(img, (img_w, img_h))
-        img = img.astype(np.float32)
-        img = (img / 255.0)
-        img = np.expand_dims(img, axis=-1)
-        images[i] = img
-        i += 1
-    else:
-        with open(DATA_PATH+sample, 'r') as s:
-            sent = s.readlines()
-            text.append(sent)
-            label_length[j] = len(sent[0])
-        j += 1
+h5 = h5py.File('dataset.h5', 'r')
+images = h5.get('images')
+label_length = h5.get('label_length')
+input_length = h5.get('input_length')
+gt_padded_txt = h5.get('text')
 
-# we need number repr for text
-gt_text = []
-textnum = []
-for line in text:
-    data = line[0]
-    textnum.append(text_to_labels(data))
-for i in range(len(textnum)):
-    gt_text.append(textnum[i])
-
-gt_padded_txt = pad_sequences(gt_text, maxlen=40, padding='post', value=0)
-
+print("loaded dataset :)")
 print("images >>", images.shape)
 print("text >>", gt_padded_txt.shape)
 print("input length >>", input_length.shape)
@@ -165,8 +133,8 @@ train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 
 
-batch_size = 64
-epochs = 200
+batch_size = 32
+epochs = 5
 adam = optimizers.adam(lr=1e-5, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)

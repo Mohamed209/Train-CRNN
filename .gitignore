@@ -11,6 +11,7 @@ receipt_ocr/ckpts/
 demo.py
 demoo.py
 out/
+dataset/dataset.h5
 # Distribution / packaging
 .Python
 env/
