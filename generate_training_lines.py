@@ -96,11 +96,11 @@ create N generators and randomly select one for each iteration
 '''
 ####################################################################
 generate_mixed_lines()
-generate_english_lines()
+#generate_english_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=250000,
+    count=150000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -111,7 +111,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=250000,
+    count=150000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -149,6 +149,6 @@ if __name__ == "__main__":
     with Pool() as pool:
         pool.starmap(save_mixed_lines, [(img, lbl)
                                         for (img, lbl) in tqdm(mixed_generator)])
-    with Pool() as pool:
-        pool.starmap(save_mixed_lines, [(img, lbl)
-                                        for (img, lbl) in tqdm(mixed_generator)])
+    # with Pool() as pool:
+    #     pool.starmap(save_eng_lines, [(img, lbl)
+    #                                   for (img, lbl) in tqdm(english_generator)])
