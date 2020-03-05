@@ -165,8 +165,8 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 
-epochs = 10
-adam = optimizers.adam(lr=1e-5, decay=1e-1 / epochs)
+epochs = 150
+adam = optimizers.adam(lr=1e-4, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
 # early_stop = EarlyStopping(
@@ -175,8 +175,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=150//32,
-                          validation_steps=150//32,
+                          steps_per_epoch=240000//32,
+                          validation_steps=240000//32,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint],
