@@ -17,9 +17,10 @@ import pyarabic.araby as araby
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 import h5py
+import math
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
-#sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+# sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
 letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
@@ -44,29 +45,61 @@ def ctc_lambda_func(args):
 
 
 # data loader
-h5 = h5py.File('dataset.h5', 'r')
-images = h5.get('images')
-label_length = h5.get('label_length')
-input_length = h5.get('input_length')
-gt_padded_txt = h5.get('text')
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+    dataset = h5py.File(dataset_path, 'r')
+    train_indexes = int(train_size*dataset['images'].shape[0])
+    while True:
+        images = np.zeros((batch_size, img_h, img_w, no_channels))
+        text = np.zeros((batch_size, text_max_len))
+        label_length = np.zeros((batch_size, 1), dtype=np.int)
+        input_length = np.ones((batch_size, 1)) * \
+            (img_w // 2)
+        # choose randomly 32 samples of training data from hard disk and load them into memory
+        i = 0
+        samples_indexes = np.random.choice(train_indexes, size=batch_size)
+        for j in samples_indexes:
+            images[i] = dataset['images'][j]
+            text[i] = dataset['text'][j]
+            label_length[i] = dataset['label_length'][j]
+            input_length[i] = dataset['input_length'][j]
+            i += 1
+        inputs = {
+            'input_1': images,
+            'the_labels': text,
+            'input_length': input_length,
+            'label_length': label_length
+        }
+        outputs = {'ctc': np.zeros(batch_size)}
+        yield (inputs, outputs)
 
-print("loaded dataset :)")
-print("images >>", images.shape)
-print("text >>", gt_padded_txt.shape)
-print("input length >>", input_length.shape)
-print("label length>>", label_length.shape)
 
-
-# train validation split
-train_size = 0.8
-xtrain = images[: int(train_size*images.shape[0])]
-xtest = images[int(train_size*images.shape[0]):]
-ytrain = gt_padded_txt[: int(train_size*gt_padded_txt.shape[0])]
-ytest = gt_padded_txt[int(train_size*gt_padded_txt.shape[0]):]
-train_input_length = input_length[: int(train_size*input_length.shape[0])]
-test_input_length = input_length[int(train_size*input_length.shape[0]):]
-train_label_length = label_length[: int(train_size*label_length.shape[0])]
-test_label_length = label_length[int(train_size*label_length.shape[0]):]
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+    dataset = h5py.File(dataset_path, 'r')
+    test_indexes = range(
+        int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0])
+    while True:
+        images = np.zeros((batch_size, img_h, img_w, no_channels))
+        text = np.zeros((batch_size, text_max_len))
+        label_length = np.zeros((batch_size, 1), dtype=np.int)
+        input_length = np.ones((batch_size, 1)) * \
+            (img_w // 2)
+        # choose randomly 32 samples of training data from hard disk and load them into memory
+        i = 0
+        samples_indexes = np.random.choice(test_indexes, size=batch_size)
+        for j in samples_indexes:
+            images[i] = dataset['images'][j]
+            text[i] = dataset['text'][j]
+            label_length[i] = dataset['label_length'][j]
+            input_length[i] = dataset['input_length'][j]
+            i += 1
+        inputs = {
+            'input_1': images,
+            'the_labels': text,
+            'input_length': input_length,
+            'label_length': label_length
+        }
+        outputs = {'ctc': np.zeros(batch_size)}
+        yield (inputs, outputs)
 
 
 # network >>>>> CNN + RNN + CTC loss
@@ -132,22 +165,22 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 
-
-batch_size = 32
-epochs = 5
+epochs = 10
 adam = optimizers.adam(lr=1e-5, decay=1e-1 / epochs)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
+# early_stop = EarlyStopping(
+#     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
-train_model.fit(x=[xtrain, ytrain, train_input_length, train_label_length],
-                y=np.zeros(ytrain.shape[0]),
-                validation_data=(
-                    [xtest, ytest, test_input_length, test_label_length], np.zeros(ytest.shape[0])),
-                callbacks=[checkpoint],
-                batch_size=batch_size,
-                epochs=epochs,
-                verbose=1)
+train_model.fit_generator(generator=train_data_generator(),
+                          validation_data=test_data_generator(),
+                          steps_per_epoch=150//32,
+                          validation_steps=150//32,
+                          epochs=epochs,
+                          verbose=1,
+                          callbacks=[checkpoint],
+                          use_multiprocessing=True)
 
 
 # predict outputs on validation images
