@@ -138,10 +138,10 @@ blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
 blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
-blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
+#blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
 
-outputs = Dense(len(letters)+1, activation='softmax')(blstm_4)
+outputs = Dense(len(letters)+1, activation='softmax')(blstm_3)
 
 test_model = Model(inputs, outputs)
 
