@@ -25,7 +25,7 @@ print(device_lib.list_local_devices())
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
-letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
+letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 
 
 def labels_to_text(labels):
@@ -49,7 +49,7 @@ def ctc_lambda_func(args):
 # data loader
 def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
-    train_indexes = int(train_size*dataset['images'].shape[0])
+    train_indexes = range(int(train_size*dataset['images'].shape[0]))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
