@@ -138,8 +138,11 @@ squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
+blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
-outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
+
+outputs = Dense(len(letters)+1, activation='softmax')(blstm_4)
 
 test_model = Model(inputs, outputs)
 
@@ -167,13 +170,13 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 # load weights
-#train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
+# train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
 
 # load weights
-#train_model.load_weights("ckpts/CRNN--20--3.554.hdf5")
+# train_model.load_weights("ckpts/CRNN--20--3.554.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-#sgd=optimizers.SGD(lr=1e-4)
+# sgd=optimizers.SGD(lr=1e-4)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.Adadelta())
 # early_stop = EarlyStopping(
