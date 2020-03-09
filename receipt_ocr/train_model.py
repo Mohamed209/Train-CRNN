@@ -26,7 +26,7 @@ print(device_lib.list_local_devices())
 
 # utils
 
-letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
+letters = araby.LETTERS+string.printable+'٠١٢٣٤٥٦٧٨٩'
 
 def labels_to_text(labels):
     return ''.join(list(map(lambda x: letters[int(x)], labels)))
