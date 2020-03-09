@@ -47,7 +47,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = 25  # int(train_size*dataset['images'].shape[0])
     while True:
@@ -75,7 +75,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     test_indexes = 4  # range(
     # int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0])
@@ -169,19 +169,42 @@ train_model = Model(
 # load weights
 #train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
 
-epochs = 5
-adam = optimizers.adam(lr=1e-5, decay=1e-1 / epochs)
+# load weights
+#train_model.load_weights("ckpts/CRNN--20--3.554.hdf5")
+epochs = 50
+#adam = optimizers.adam(lr=1e-5)
+#sgd=optimizers.SGD(lr=1e-4)
 train_model.compile(
-    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
+    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.Adadelta())
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=1)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=25//8,
-                          validation_steps=4//1,
+                          steps_per_epoch=240000//128,
+                          validation_steps=60000//128,
                           epochs=epochs,
                           verbose=1,
-                          callbacks=[checkpoint],
-                          use_multiprocessing=True)
+                          callbacks=[checkpoint])
+
+
+# predict outputs on validation images
+# test_model.load_weights('CRNN--500--147.804.hdf5')
+# test_image = images[1][:, :, -1]
+# test_image = np.expand_dims(test_image, -1)
+# test_image = np.expand_dims(test_image, axis=0)
+# prediction = test_model.predict(test_image)
+# plt.imshow(images[1][:, :, -1])
+# # use CTC decoder
+# out = K.get_value(K.ctc_decode(prediction, input_length=np.ones(prediction.shape[0])*prediction.shape[1],
+#                                greedy=True)[0][0])
+# # see the results
+# i = 0
+# for x in out:
+#     print("predicted text = ", end='')
+#     for p in x:
+#         if int(p) != -1:
+#             print(letters[int(p)], end='')
+#     print('\n')
+#     i += 1
