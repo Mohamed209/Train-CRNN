@@ -25,12 +25,8 @@ print(device_lib.list_local_devices())
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
-<<<<<<< HEAD
-letters = araby.LETTERS+string.printable+'٠١٢٣٤٥٦٧٨٩'
-=======
-letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
->>>>>>> 5987e28d59da3e2e30226cc0092e5f463a894266
 
+letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
 
 def labels_to_text(labels):
     return ''.join(list(map(lambda x: letters[int(x)], labels)))
