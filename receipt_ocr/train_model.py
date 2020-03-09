@@ -9,6 +9,7 @@ from keras.activations import relu, sigmoid, softmax
 from keras.models import Model
 from keras.layers import Dense, LSTM, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional
 from keras.preprocessing.sequence import pad_sequences
+from keras.models import load_model
 import numpy as np
 import cv2
 import os
@@ -20,6 +21,7 @@ import h5py
 import math
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
+#sess = tf.compat.v1.Session(config=tf.ConfigProto(log_device_placement=True))
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
@@ -47,7 +49,7 @@ def ctc_lambda_func(args):
 # data loader
 def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
-    train_indexes = int(train_size*dataset['images'].shape[0])
+    train_indexes = 25  # int(train_size*dataset['images'].shape[0])
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
@@ -75,8 +77,8 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
 
 def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
-    test_indexes = range(
-        int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0])
+    test_indexes = 4  # range(
+    # int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0])
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
@@ -136,8 +138,11 @@ squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
+blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
-outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
+
+outputs = Dense(len(letters)+1, activation='softmax')(blstm_4)
 
 test_model = Model(inputs, outputs)
 
@@ -164,12 +169,14 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 # model to be used at training time
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
+# load weights
+# train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
 
 # load weights
-#train_model.load_weights("ckpts/CRNN--20--3.554.hdf5")
+# train_model.load_weights("ckpts/CRNN--20--3.554.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-#sgd=optimizers.SGD(lr=1e-4)
+# sgd=optimizers.SGD(lr=1e-4)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.Adadelta())
 # early_stop = EarlyStopping(
