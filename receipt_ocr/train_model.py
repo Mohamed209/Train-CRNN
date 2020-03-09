@@ -26,7 +26,7 @@ print(device_lib.list_local_devices())
 
 # utils
 
-letters = araby.LETTERS+string.printable+u' ٠١٢٣٤٥٦٧٨٩'
+letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 
 def labels_to_text(labels):
     return ''.join(list(map(lambda x: letters[int(x)], labels)))
@@ -138,10 +138,10 @@ blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
 blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
-#blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
+blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
 
-outputs = Dense(len(letters)+2, activation='softmax')(blstm_3)
+outputs = Dense(len(letters)+1, activation='softmax')(blstm_4)
 
 test_model = Model(inputs, outputs)
 
