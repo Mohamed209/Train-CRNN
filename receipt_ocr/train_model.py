@@ -23,7 +23,7 @@ print(device_lib.list_local_devices())
 # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
-letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
+letters = araby.LETTERS+string.printable+'٠١٢٣٤٥٦٧٨٩'
 
 
 def labels_to_text(labels):
