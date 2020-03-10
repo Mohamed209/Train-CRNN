@@ -8,10 +8,10 @@ import pyarabic.araby as araby
 import string
 letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 test_model = load_model('test_model.h5', compile=False)
-test_model.load_weights('ckpts/CRNN--30--2.860.hdf5')
+test_model.load_weights('ckpts/CRNN--20--3.554.hdf5')
 
 test_image = cv2.imread(
-    'test_images/IMG_20190123_155750.jpg', 0)
+    'test_images/67a43642-1398-4ded-b9d9-111ab47c66c2.png', 0)
 test_image = cv2.resize(test_image, (432, 32))
 test_image = np.expand_dims(test_image, -1)
 test_image = np.expand_dims(test_image, axis=0)

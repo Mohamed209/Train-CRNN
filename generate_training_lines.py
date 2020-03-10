@@ -19,7 +19,7 @@ import string
 from multiprocessing import Pool
 letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
 SHADOW_DISTRIBUTION = [1, 0]
-SHADOW_WEIGHT = [0.3, 0.7]
+SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
@@ -29,8 +29,8 @@ eng_lines = []
 ara_lines_no_res = []
 mixed_lines = []
 mixed_lines_no_res = []
-text_size = [70, 80, 90]
-blur = [0, 1]
+text_size = [60, 70, 80]
+blur = [0, 1, 2]
 skewing_angle = [0, 1, 2]
 background_type = [0, 1, 2]
 distorsion_type = [0, 2, 3]
@@ -90,13 +90,9 @@ def generate_mixed_lines():
             mixed_lines[i] = get_display(mixed_lines[i])
 
 
-####################################################################
-'''
-create N generators and randomly select one for each iteration
-'''
-####################################################################
 generate_mixed_lines()
 generate_english_lines()
+
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',

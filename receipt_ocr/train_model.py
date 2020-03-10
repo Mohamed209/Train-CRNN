@@ -7,7 +7,7 @@ import keras.backend as K
 from keras import optimizers
 from keras.activations import relu, sigmoid, softmax
 from keras.models import Model
-from keras.layers import Dense, LSTM, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional
+from keras.layers import Dense, LSTM, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional, ZeroPadding2D
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 import numpy as np
@@ -27,6 +27,7 @@ print(device_lib.list_local_devices())
 # utils
 
 letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
+
 
 def labels_to_text(labels):
     return ''.join(list(map(lambda x: letters[int(x)], labels)))
@@ -77,7 +78,8 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
 
 def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
-    test_indexes = list(range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
+    test_indexes = list(
+        range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
@@ -106,47 +108,44 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
 # network >>>>> CNN + RNN + CTC loss
 # input with shape of height=32 and width=432
 inputs = Input(shape=(32, 432, 1))
-
-# convolution layer with kernel size (3,3)
-conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
-# poolig layer with kernel size (2,2)
-pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1)
-
-conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1)
-pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2)
-
-conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2)
-
-conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv_3)
-# poolig layer with kernel size (2,1)
+inputs_padded = ZeroPadding2D((1, 1), input_shape=(32, 432))(inputs)
+conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs_padded)
+conv1_padded = ZeroPadding2D((1, 1))(conv_1)
+conv_1_2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv1_padded)
+pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1_2)
+####################################################################################
+pool_1_p = ZeroPadding2D((1, 1))(pool_1)
+conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1_p)
+conv2_padded = ZeroPadding2D((1, 1))(conv_2)
+conv_2_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv2_padded)
+pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2_2)
+###################################################################################
+pool_2_p = ZeroPadding2D((1, 1))(pool_2)
+conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2_p)
+conv3_p = ZeroPadding2D((1, 1))(conv_3)
+conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3_p)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
-
+##################################################################################
 conv_5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool_4)
-# Batch normalization layer
 batch_norm_5 = BatchNormalization()(conv_5)
-
 conv_6 = Conv2D(512, (3, 3), activation='relu', padding='same')(batch_norm_5)
 batch_norm_6 = BatchNormalization()(conv_6)
-pool_6 = MaxPooling2D(pool_size=(2, 1))(batch_norm_6)
-
+pool_6 = MaxPooling2D(pool_size=(3, 1))(batch_norm_6)
 conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
 # feature maps to sequence
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
-
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
-blstm_2 = Bidirectional(LSTM(512, return_sequences=True, dropout=0.2))(blstm_1)
-#blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
-#blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
-
+blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+# blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
+# blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
 outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
 
 test_model = Model(inputs, outputs)
 
 print(test_model.summary())
-
 
 test_model.save('test_model.h5')
 
@@ -181,7 +180,7 @@ train_model.compile(
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
                           steps_per_epoch=240000//128,
