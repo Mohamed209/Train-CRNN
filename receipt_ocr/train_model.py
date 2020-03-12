@@ -7,7 +7,7 @@ import keras.backend as K
 from keras import optimizers
 from keras.activations import relu, sigmoid, softmax
 from keras.models import Model
-from keras.layers import Dense, LSTM, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional, ZeroPadding2D
+from keras.layers import Dense, LSTM, GRU ,Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional, ZeroPadding2D
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 import numpy as np
@@ -136,8 +136,8 @@ conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
-    LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
-blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+    GRU(256, return_sequences=True, dropout=0.2))(squeezed)
+blstm_2 = Bidirectional(GRU(256, return_sequences=True, dropout=0.2))(blstm_1)
 # blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
 # blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
