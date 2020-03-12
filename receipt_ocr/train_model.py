@@ -174,7 +174,8 @@ train_model = Model(
 train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-sgd=optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
+sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
+                     nesterov=True, clipnorm=5)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
 # early_stop = EarlyStopping(
@@ -183,8 +184,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=240000//32,
-                          validation_steps=60000//32,
+                          steps_per_epoch=140000//32,
+                          validation_steps=40000//32,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
