@@ -48,7 +48,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
@@ -76,7 +76,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
@@ -136,8 +136,8 @@ conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
-    GRU(256, return_sequences=True, dropout=0.2))(squeezed)
-blstm_2 = Bidirectional(GRU(256, return_sequences=True, dropout=0.2))(blstm_1)
+    LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
+blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
 # blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
 # blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
@@ -184,29 +184,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=240000//64,
-                          validation_steps=60000//64,
+                          steps_per_epoch=500000//128,
+                          validation_steps=10000//128,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
-
-
-# predict outputs on validation images
-# test_model.load_weights('CRNN--500--147.804.hdf5')
-# test_image = images[1][:, :, -1]
-# test_image = np.expand_dims(test_image, -1)
-# test_image = np.expand_dims(test_image, axis=0)
-# prediction = test_model.predict(test_image)
-# plt.imshow(images[1][:, :, -1])
-# # use CTC decoder
-# out = K.get_value(K.ctc_decode(prediction, input_length=np.ones(prediction.shape[0])*prediction.shape[1],
-#                                greedy=True)[0][0])
-# # see the results
-# i = 0
-# for x in out:
-#     print("predicted text = ", end='')
-#     for p in x:
-#         if int(p) != -1:
-#             print(letters[int(p)], end='')
-#     print('\n')
-#     i += 1
