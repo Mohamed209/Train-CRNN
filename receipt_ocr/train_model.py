@@ -177,15 +177,15 @@ epochs = 50
 sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
                      nesterov=True, clipnorm=5)
 train_model.compile(
-    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.Adadelta())
+    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=500000//128,
-                          validation_steps=10000//128,
+                          steps_per_epoch=120000//128,
+                          validation_steps=25000//128,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
