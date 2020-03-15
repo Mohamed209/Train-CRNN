@@ -6,13 +6,17 @@ import numpy as np
 import cv2
 import pyarabic.araby as araby
 import string
-letters = araby.LETTERS+string.printable+'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
-test_model = load_model('test_model.h5', compile=False)
-test_model.load_weights('ckpts/CRNN--10--2.014.hdf5')
+letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
+test_model = load_model('test_model.h5')
+test_model.load_weights('ckpts/CRNN--15--1.870.hdf5')
 
 test_image = cv2.imread(
-    'test_images/5.jpg', 0)
+    'test_images/IMG_20190707_200454.jpg', 0)
 test_image = cv2.resize(test_image, (432, 32))
+test_image = test_image/255.0
+cv2.imshow('line', test_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 test_image = np.expand_dims(test_image, -1)
 test_image = np.expand_dims(test_image, axis=0)
 prediction = test_model.predict(test_image)

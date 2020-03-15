@@ -11,13 +11,11 @@ from trdg.generators import GeneratorFromStrings
 from trdg.utils import add_parallel_light
 from scipy.stats import norm
 from PIL import Image
-from data_loader import pull_wikipedia_content
 from tqdm import tqdm
-from joblib import Parallel, delayed
 import pyarabic.araby as araby
 import string
 from multiprocessing import Pool
-letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
+letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]

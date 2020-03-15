@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 # coding: utf-8
-
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
 import keras.backend as K
@@ -21,12 +19,10 @@ import h5py
 import math
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
-#sess = tf.compat.v1.Session(config=tf.ConfigProto(log_device_placement=True))
-# sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # utils
 
-letters = araby.LETTERS+string.printable+u'٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩'
+letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
 
 
 def labels_to_text(labels):
@@ -48,28 +44,26 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
-        label_length = np.zeros((batch_size, 1), dtype=np.int)
-        input_length = np.ones((batch_size, 1)) * \
-            (img_w // 2)
-        # choose randomly 32 samples of training data from hard disk and load them into memory
+        label_length = np.zeros((batch_size, 1), dtype=np.int64)
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 114
+        # choose randomly 128 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(train_indexes, size=batch_size)
         for j in samples_indexes:
             images[i] = dataset['images'][j]
             text[i] = dataset['text'][j]
             label_length[i] = dataset['label_length'][j]
-            input_length[i] = dataset['input_length'][j]
             i += 1
         inputs = {
             'input_1': images,
             'the_labels': text,
-            'input_length': input_length,
+            'input_length': input_length[:batch_size],
             'label_length': label_length
         }
         outputs = {'ctc': np.zeros(batch_size)}
@@ -83,9 +77,8 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
-        label_length = np.zeros((batch_size, 1), dtype=np.int)
-        input_length = np.ones((batch_size, 1)) * \
-            (img_w // 2)
+        label_length = np.zeros((batch_size, 1), dtype=np.int64)
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 114
         # choose randomly 32 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(test_indexes, size=batch_size)
@@ -93,12 +86,11 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
             images[i] = dataset['images'][j]
             text[i] = dataset['text'][j]
             label_length[i] = dataset['label_length'][j]
-            input_length[i] = dataset['input_length'][j]
             i += 1
         inputs = {
             'input_1': images,
             'the_labels': text,
-            'input_length': input_length,
+            'input_length': input_length[:batch_size],
             'label_length': label_length
         }
         outputs = {'ctc': np.zeros(batch_size)}
@@ -138,8 +130,6 @@ squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
-# blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
-# blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
 outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
 
@@ -155,10 +145,10 @@ input_length = Input(name='input_length', shape=[1], dtype='int64')
 label_length = Input(name='label_length', shape=[1], dtype='int64')
 
 
-def ctc_lambda_func(args):
-    y_pred, labels, input_length, label_length = args
-    # y_pred = y_pred[:, 2:, :]
-    return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+# def ctc_lambda_func(args):
+#     y_pred, labels, input_length, label_length = args
+#     # y_pred = y_pred[:, 2:, :]
+#     return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 
 loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
@@ -171,42 +161,21 @@ train_model = Model(
 # train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
 
 # load weights
-train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
+# train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
-                     nesterov=True, clipnorm=5)
+# sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
+#                      nesterov=True, clipnorm=5)
 train_model.compile(
-    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
+    loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=140000//32,
-                          validation_steps=40000//32,
+                          steps_per_epoch=250000//128,
+                          validation_steps=50000//128,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
-
-
-# predict outputs on validation images
-# test_model.load_weights('CRNN--500--147.804.hdf5')
-# test_image = images[1][:, :, -1]
-# test_image = np.expand_dims(test_image, -1)
-# test_image = np.expand_dims(test_image, axis=0)
-# prediction = test_model.predict(test_image)
-# plt.imshow(images[1][:, :, -1])
-# # use CTC decoder
-# out = K.get_value(K.ctc_decode(prediction, input_length=np.ones(prediction.shape[0])*prediction.shape[1],
-#                                greedy=True)[0][0])
-# # see the results
-# i = 0
-# for x in out:
-#     print("predicted text = ", end='')
-#     for p in x:
-#         if int(p) != -1:
-#             print(letters[int(p)], end='')
-#     print('\n')
-#     i += 1
