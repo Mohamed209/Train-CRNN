@@ -63,7 +63,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         inputs = {
             'input_1': images,
             'the_labels': text,
-            'input_length': input_length[:batch_size],
+            'input_length': input_length,
             'label_length': label_length
         }
         outputs = {'ctc': np.zeros(batch_size)}
@@ -90,7 +90,7 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
         inputs = {
             'input_1': images,
             'the_labels': text,
-            'input_length': input_length[:batch_size],
+            'input_length': input_length,
             'label_length': label_length
         }
         outputs = {'ctc': np.zeros(batch_size)}
@@ -141,7 +141,7 @@ blstm_1 = BatchNormalization()(blstm_1)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
                              dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
 
-outputs = Dense(len(letters)+2, activation='softmax')(blstm_2)
+outputs = Dense(len(letters)+10, activation='softmax')(blstm_2)
 
 test_model = Model(inputs, outputs)
 
