@@ -140,7 +140,7 @@ blstm_1 = Bidirectional(
 blstm_1 = BatchNormalization()(blstm_1)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
                              dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
-
+blstm_2 = BatchNormalization()(blstm_2)
 outputs = Dense(len(letters)+10, activation='softmax')(blstm_2)
 
 test_model = Model(inputs, outputs)
