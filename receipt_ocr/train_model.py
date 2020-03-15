@@ -174,7 +174,7 @@ train_model = Model(
 #train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-sgd = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9,
+sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
                      nesterov=True, clipnorm=5)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
