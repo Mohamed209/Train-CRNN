@@ -137,6 +137,7 @@ squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
     LSTM(256, return_sequences=True, dropout=0.2, kernel_initializer='he_normal'))(squeezed)
+blstm_1 = BatchNormalization()(blstm_1)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
                              dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
 
