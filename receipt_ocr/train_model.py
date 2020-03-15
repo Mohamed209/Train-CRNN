@@ -136,8 +136,8 @@ conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
-    LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
-blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+    LSTM(512, return_sequences=True, dropout=0.2))(squeezed)
+blstm_2 = Bidirectional(LSTM(512, return_sequences=True, dropout=0.2))(blstm_1)
 # blstm_3 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_2)
 # blstm_4 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_3)
 
@@ -174,7 +174,7 @@ train_model = Model(
 #train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
 epochs = 50
 #adam = optimizers.adam(lr=1e-5)
-sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
+sgd = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9,
                      nesterov=True, clipnorm=5)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
