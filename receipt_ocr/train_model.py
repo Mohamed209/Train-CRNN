@@ -44,7 +44,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
@@ -70,7 +70,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/dataset.h5'):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
@@ -140,7 +140,7 @@ blstm_1 = Bidirectional(
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
                              dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
 
-outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
+outputs = Dense(len(letters)+2, activation='softmax')(blstm_2)
 
 test_model = Model(inputs, outputs)
 
@@ -183,8 +183,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=250000//128,
-                          validation_steps=50000//128,
+                          steps_per_epoch=250000//64,
+                          validation_steps=50000//64,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
