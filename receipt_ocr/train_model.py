@@ -102,34 +102,43 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
 inputs = Input(shape=(32, 432, 1))
 inputs_padded = ZeroPadding2D((1, 1), input_shape=(32, 432))(inputs)
 conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs_padded)
+conv_1 = BatchNormalization()(conv_1)
 conv1_padded = ZeroPadding2D((1, 1))(conv_1)
 conv_1_2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv1_padded)
+conv_1_2 = BatchNormalization()(conv1_2)
 pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1_2)
 ####################################################################################
 pool_1_p = ZeroPadding2D((1, 1))(pool_1)
 conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1_p)
+conv_2 = BatchNormalization()(conv_2)
 conv2_padded = ZeroPadding2D((1, 1))(conv_2)
 conv_2_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv2_padded)
+conv_2_2 = BatchNormalization()(conv_2_2)
 pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2_2)
 ###################################################################################
 pool_2_p = ZeroPadding2D((1, 1))(pool_2)
 conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2_p)
+conv_3 = BatchNormalization()(conv_3)
 conv3_p = ZeroPadding2D((1, 1))(conv_3)
 conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3_p)
+conv_4 = BatchNormalization()(conv_4)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
 ##################################################################################
 conv_5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool_4)
+conv_5 = BatchNormalization()(conv_5)
 batch_norm_5 = BatchNormalization()(conv_5)
 conv_6 = Conv2D(512, (3, 3), activation='relu', padding='same')(batch_norm_5)
 batch_norm_6 = BatchNormalization()(conv_6)
 pool_6 = MaxPooling2D(pool_size=(3, 1))(batch_norm_6)
 conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
+conv_7 = BatchNormalization()(conv_7)
 # feature maps to sequence
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 # bidirectional LSTM layers with units=256
 blstm_1 = Bidirectional(
-    LSTM(256, return_sequences=True, dropout=0.2))(squeezed)
-blstm_2 = Bidirectional(LSTM(256, return_sequences=True, dropout=0.2))(blstm_1)
+    LSTM(256, return_sequences=True, dropout=0.2, kernel_initializer='he_normal'))(squeezed)
+blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
+                             dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
 
 outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
 
@@ -145,10 +154,10 @@ input_length = Input(name='input_length', shape=[1], dtype='int64')
 label_length = Input(name='label_length', shape=[1], dtype='int64')
 
 
-# def ctc_lambda_func(args):
-#     y_pred, labels, input_length, label_length = args
-#     # y_pred = y_pred[:, 2:, :]
-#     return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+def ctc_lambda_func(args):
+    y_pred, labels, input_length, label_length = args
+    # y_pred = y_pred[:, 2:, :]
+    return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 
 loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
