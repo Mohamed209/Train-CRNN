@@ -105,7 +105,7 @@ conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs_padded)
 conv_1 = BatchNormalization()(conv_1)
 conv1_padded = ZeroPadding2D((1, 1))(conv_1)
 conv_1_2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv1_padded)
-conv_1_2 = BatchNormalization()(conv1_2)
+conv_1_2 = BatchNormalization()(conv_1_2)
 pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1_2)
 ####################################################################################
 pool_1_p = ZeroPadding2D((1, 1))(pool_1)
