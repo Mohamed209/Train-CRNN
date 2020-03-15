@@ -5,7 +5,7 @@ import keras.backend as K
 from keras import optimizers
 from keras.activations import relu, sigmoid, softmax
 from keras.models import Model
-from keras.layers import Dense, LSTM, GRU ,Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional, ZeroPadding2D
+from keras.layers import Dense, LSTM, GRU, Reshape, BatchNormalization, Input, Conv2D, MaxPooling2D, Lambda, Bidirectional, ZeroPadding2D
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 import numpy as np
@@ -22,7 +22,7 @@ print(device_lib.list_local_devices())
 
 # utils
 
-letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
+letters = [ch for ch in araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩']
 
 
 def labels_to_text(labels):
