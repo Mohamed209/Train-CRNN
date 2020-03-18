@@ -50,7 +50,7 @@ def invert(pil_img):
 
 def generate_english_lines():
     flag = False
-    with open('dataset/text_corpus/rcpts_eng.txt') as f:
+    with open('dataset/text_corpus/recpts_eng.txt') as f:
         for line in tqdm(f.readlines()):
             if line.strip():
                 for ch in list(set(line)):
