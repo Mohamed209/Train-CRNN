@@ -1431,7 +1431,26 @@ Dine In
 Subtotal 333.00
 12% S.Chg 39.96
 Vat Tax 52.21
-12:30AM Total Due425.17
+12:30AM Total Due 425.17
+‎Code Rate VAT Amount Amount
+
+V0 0 0.00 130.45
+
+V6 14 5.49 44.75
+
+Served by:Abdallah Mohamed Abdallah Abde‏
+
+Date Time Store POS Receipt
+
+03.07.2019 22:06 3920 21 25472
+
+Keep receipt for Refund/Exchange,
+
+1 day for fresh food, 14 days others.
+
+Thank you for shopping
+
+www.luluhypermarket.com
 Potatoes
 Oranges Valencia (squeeze)
 Garlic
@@ -12380,22 +12399,3 @@ Shish Tawook Panne
 Roomy or Cheddar Cheese
 Roomy Cheese and Vegetables
 Qeshta, Sugar and Hazelnut
-‎Code Rate VAT Amount Amount
-
-V0 0 0.00 130.45
-
-V6 14 5.49 44.75
-
-Served by:Abdallah Mohamed Abdallah Abde‏
-
-Date Time Store POS Receipt
-
-03.07.2019 22:06 3920 21 25472
-
-Keep receipt for Refund/Exchange,
-
-1 day for fresh food, 14 days others.
-
-Thank you for shopping
-
-www.luluhypermarket.com

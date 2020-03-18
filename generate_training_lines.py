@@ -22,16 +22,14 @@ INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
 SAVE_PATH = 'dataset/generated_data/'
-ara_lines = []
 eng_lines = []
-ara_lines_no_res = []
 mixed_lines = []
 mixed_lines_no_res = []
-text_size = [60, 70, 80]
-blur = [0, 1, 2]
+text_size = [50, 60, 70]
+blur = [0, 1]
 skewing_angle = [0, 1, 2]
-background_type = [0, 1, 2]
-distorsion_type = [0, 2, 3]
+background_type = [1, 0, 2]
+distorsion_type = [2, 0, 3]
 text_color = ["#000000", "#282828", "#505050"]
 
 
@@ -52,7 +50,7 @@ def invert(pil_img):
 
 def generate_english_lines():
     flag = False
-    with open('dataset/text_corpus/eng_gt.txt') as f:
+    with open('dataset/text_corpus/rcpts_eng.txt') as f:
         for line in tqdm(f.readlines()):
             if line.strip():
                 for ch in list(set(line)):
@@ -69,7 +67,7 @@ def generate_english_lines():
 
 def generate_mixed_lines():
     flag = False
-    with open('dataset/text_corpus/db_gt.txt', mode='r', encoding='utf-8') as f:
+    with open('dataset/text_corpus/recpts.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
             if line.strip():
                 for ch in list(set(line)):
@@ -94,7 +92,7 @@ generate_english_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=150000,
+    count=100000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
@@ -105,7 +103,7 @@ english_generator = GeneratorFromStrings(
 mixed_generator = GeneratorFromStrings(
     strings=mixed_lines,
     language='mix',
-    count=150000,
+    count=100000,
     size=np.random.choice(text_size),
     distorsion_type=np.random.choice(distorsion_type),
     skewing_angle=np.random.choice(skewing_angle),
