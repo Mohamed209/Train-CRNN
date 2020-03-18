@@ -21,7 +21,6 @@ def text_to_labels(text):
 # data loader
 img_h = 32
 img_w = 432
-downsample_factor = 4
 DATA_PATH = '../dataset/generated_data/'
 data = sorted(os.listdir(DATA_PATH))
 images = np.zeros(shape=(len(data)//2, img_h, img_w, 1))
@@ -33,7 +32,7 @@ for sample in data:
     print("loaded >>>", sample)
     if sample.split('.')[-1] == 'png':
         img = cv2.imread(DATA_PATH+sample, cv2.IMREAD_GRAYSCALE)
-        # img = cv2.resize(img, (img_w, img_h))
+        img = cv2.resize(img, (img_w, img_h))
         img = img.astype(np.float32)
         img = (img / 255.0)
         img = np.expand_dims(img, axis=-1)
