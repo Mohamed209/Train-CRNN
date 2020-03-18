@@ -63,7 +63,7 @@ print("text >>", gt_padded_txt.shape)
 print("label length>>", label_length.shape)
 
 # save np arrays to hard disk so as not to generate them from scratch in the begining of each training session
-h5 = h5py.File('../dataset/dataset.h5', 'w')
+h5 = h5py.File('../dataset/rcpt_dataset.h5', 'w')
 h5.create_dataset('images', data=images)
 h5.create_dataset('text', data=gt_padded_txt)
 h5.create_dataset('label_length', data=label_length)
