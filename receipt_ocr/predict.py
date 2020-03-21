@@ -9,10 +9,10 @@ import string
 import os
 letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
 test_model = load_model('test_model.h5')
-test_model.load_weights('ckpts/CRNN--25--1.956.hdf5')
+test_model.load_weights('ckpts/CRNN--35--0.027.hdf5')
 images = os.listdir('test_images/')
 for image in images:
-    if image.split('.')[-1] in ['jpg', 'png', 'jpeg', 'tif']:
+    if image.split('.')[-1] in ['jpg', 'png', 'jpeg', 'tif', 'JPG']:
         test_image = cv2.imread('test_images/'+image, 0)
         test_image = cv2.resize(test_image, (432, 32))
         test_image = test_image/255.0
