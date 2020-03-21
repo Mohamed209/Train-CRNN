@@ -44,14 +44,14 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/rcpt_dataset.h5'):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/rcpt_dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 114
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 107
         # choose randomly 128 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(train_indexes, size=batch_size)
@@ -70,7 +70,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=64, train_size=0.8, dataset_path='../dataset/rcpt_dataset.h5'):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=128, train_size=0.8, dataset_path='../dataset/rcpt_dataset.h5'):
     dataset = h5py.File(dataset_path, 'r')
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
@@ -78,7 +78,7 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 114
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 107
         # choose randomly 32 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(test_indexes, size=batch_size)
@@ -100,36 +100,25 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, bat
 # network >>>>> CNN + RNN + CTC loss
 # input with shape of height=32 and width=432
 inputs = Input(shape=(32, 432, 1))
-inputs_padded = ZeroPadding2D((1, 1), input_shape=(32, 432))(inputs)
-conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs_padded)
+conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
 conv_1 = BatchNormalization()(conv_1)
-conv1_padded = ZeroPadding2D((1, 1))(conv_1)
-conv_1_2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv1_padded)
-conv_1_2 = BatchNormalization()(conv_1_2)
-pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1_2)
+pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1)
 ####################################################################################
-pool_1_p = ZeroPadding2D((1, 1))(pool_1)
-conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1_p)
+conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1)
 conv_2 = BatchNormalization()(conv_2)
-conv2_padded = ZeroPadding2D((1, 1))(conv_2)
-conv_2_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv2_padded)
-conv_2_2 = BatchNormalization()(conv_2_2)
-pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2_2)
+pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2)
 ###################################################################################
-pool_2_p = ZeroPadding2D((1, 1))(pool_2)
-conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2_p)
+conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2)
 conv_3 = BatchNormalization()(conv_3)
-conv3_p = ZeroPadding2D((1, 1))(conv_3)
-conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3_p)
+conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3)
 conv_4 = BatchNormalization()(conv_4)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
 ##################################################################################
 conv_5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool_4)
 conv_5 = BatchNormalization()(conv_5)
-batch_norm_5 = BatchNormalization()(conv_5)
-conv_6 = Conv2D(512, (3, 3), activation='relu', padding='same')(batch_norm_5)
+conv_6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv_5)
 batch_norm_6 = BatchNormalization()(conv_6)
-pool_6 = MaxPooling2D(pool_size=(3, 1))(batch_norm_6)
+pool_6 = MaxPooling2D(pool_size=(2, 1))(batch_norm_6)
 conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
 conv_7 = BatchNormalization()(conv_7)
 # feature maps to sequence
@@ -147,7 +136,7 @@ test_model = Model(inputs, outputs)
 
 print(test_model.summary())
 
-test_model.save('test_model.h5')
+test_model.save('slim_test_model.h5')
 
 max_label_len = 40
 labels = Input(name='the_labels', shape=[max_label_len], dtype='float32')
@@ -169,13 +158,7 @@ train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 # load weights
 # train_model.load_weights("ckpts/CRNN--05--95.947.hdf5")
-
-# load weights
-# train_model.load_weights("ckpts/CRNN--15--1.870.hdf5")
 epochs = 50
-#adam = optimizers.adam(lr=1e-5)
-# sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9,
-#                      nesterov=True, clipnorm=5)
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
@@ -184,8 +167,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=200000//64,
-                          validation_steps=50000//64,
+                          steps_per_epoch=200000//128,
+                          validation_steps=50000//128,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
