@@ -110,7 +110,7 @@ pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2)
 ###################################################################################
 conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2)
 conv_3 = BatchNormalization()(conv_3)
-conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3)
+conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv_3)
 conv_4 = BatchNormalization()(conv_4)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
 ##################################################################################
