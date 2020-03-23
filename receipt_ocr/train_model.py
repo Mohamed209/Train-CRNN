@@ -110,7 +110,7 @@ pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2)
 ###################################################################################
 conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2)
 conv_3 = BatchNormalization()(conv_3)
-conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3)
+conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv_3)
 conv_4 = BatchNormalization()(conv_4)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
 ##################################################################################
@@ -164,7 +164,7 @@ train_model.compile(
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
+    filepath='ckpts/slimCRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
                           steps_per_epoch=200000//128,
