@@ -56,7 +56,7 @@ def generate_english_lines():
                 for ch in list(set(line)):
                     if ch not in letters:
                         flag = True
-                        print("unwanted char ", ch)
+                        print("unwanted eng char ", ch)
                         break
                 if flag:
                     flag = False
@@ -67,13 +67,13 @@ def generate_english_lines():
 
 def generate_mixed_lines():
     flag = False
-    with open('dataset/text_corpus/recpts.txt', mode='r', encoding='utf-8') as f:
+    with open('dataset/text_corpus/recpts_ara.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
             if line.strip():
                 for ch in list(set(line)):
                     if ch not in letters:
                         flag = True
-                        print("unwanted char ", ch)
+                        print("unwanted ara char ", ch)
                         break
                 if flag:
                     flag = False

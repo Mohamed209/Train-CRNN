@@ -8,8 +8,8 @@ import pyarabic.araby as araby
 import string
 import os
 letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
-test_model = load_model('test_model.h5')
-test_model.load_weights('ckpts/CRNN--35--0.027.hdf5')
+test_model = load_model('slim_test_model.h5')
+test_model.load_weights('ckpts/slimCRNN--05--1.214.hdf5')
 images = os.listdir('test_images/')
 for image in images:
     if image.split('.')[-1] in ['jpg', 'png', 'jpeg', 'tif', 'JPG']:
