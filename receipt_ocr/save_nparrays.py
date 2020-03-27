@@ -21,7 +21,7 @@ def text_to_labels(text):
 # data loader
 img_h = 32
 img_w = 432
-DATA_PATH = '../dataset/generated_data/'
+DATA_PATH = '/home/mossad/ocr/azka-annotation/training_data/'
 data = sorted(os.listdir(DATA_PATH))
 images = np.zeros(shape=(len(data)//2, img_h, img_w, 1))
 label_length = np.zeros((len(data)//2, 1), dtype=np.int64)
@@ -62,7 +62,7 @@ print("text >>", gt_padded_txt.shape)
 print("label length>>", label_length.shape)
 
 # save np arrays to hard disk so as not to generate them from scratch in the begining of each training session
-h5 = h5py.File('../dataset/rcpt_dataset.h5', 'w')
+h5 = h5py.File('../dataset/finetune_rcpt_dataset.h5', 'w')
 h5.create_dataset('images', data=images)
 h5.create_dataset('text', data=gt_padded_txt)
 h5.create_dataset('label_length', data=label_length)
