@@ -174,8 +174,10 @@ if mode == 'fine_tune':
     # train model only from last conv layer to the end
     for layer in train_model.layers[:-8]:
         layer.trainable = False
-    print("fine tuned model summary >> "train_model.summary())
-epochs = 50
+    print("fine tuned model summary >> ",train_model.summary())
+if mode=='fine_tune':
+	epochs = 300
+else : epochs = 50
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
