@@ -6,7 +6,6 @@ import os
 import string
 import pyarabic.araby as araby
 import sys
-
 mode = sys.argv[1]
 assert mode in [
     'fine_tune', 'from_scratch'], "supported modes is to generate data for training from scratch or finetune [finetune,from_scratch]"
