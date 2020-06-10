@@ -7,9 +7,6 @@ __pycache__/
 *.so
 venv/
 dataset/generated_data/
-receipt_ocr/ckpts/
-receipt_ocr/test_images/
-receipt_ocr/test_model.h5
 demo.py
 demoo.py
 out/
@@ -108,4 +105,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-.vscode/*
+.vscode/
+ocr/arch
+ocr/ckpts/
+ocr/test_images/
