@@ -2,10 +2,15 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.h5
 # C extensions
 *.so
-
+venv/
+dataset/generated_data/
+demo.py
+demoo.py
+out/
+dataset/dataset.h5
 # Distribution / packaging
 .Python
 env/
@@ -100,4 +105,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-.vscode/*
+.vscode/
+ocr/arch
+ocr/ckpts/
+ocr/test_images/
