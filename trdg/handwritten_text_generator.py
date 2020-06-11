@@ -161,57 +161,57 @@ def _join_images(images):
     return compound_image
 
 
-def generate(text, text_color):
-    cd = download_model_weights()
-    with open(os.path.join(cd, os.path.join("handwritten_model", "translation.pkl")), "rb") as file:
-        translation = pickle.load(file)
+# def generate(text, text_color):
+#     cd = download_model_weights()
+#     with open(os.path.join(cd, os.path.join("handwritten_model", "translation.pkl")), "rb") as file:
+#         translation = pickle.load(file)
 
-    config = tf.compat.v1.ConfigProto(device_count={"GPU": 0})
-    tf.compat.v1.reset_default_graph()
-    with tf.compat.v1.Session(config=config) as sess:
-        saver = tf.compat.v1.train.import_meta_graph(os.path.join(cd,"handwritten_model/model-29.meta"))
-        saver.restore(sess,os.path.join(cd,os.path.join("handwritten_model/model-29")))
-        images = []
-        colors = [ImageColor.getrgb(c) for c in text_color.split(",")]
-        c1, c2 = colors[0], colors[-1]
+#     config = tf.compat.v1.ConfigProto(device_count={"GPU": 0})
+#     tf.compat.v1.reset_default_graph()
+#     with tf.compat.v1.Session(config=config) as sess:
+#         saver = tf.compat.v1.train.import_meta_graph(os.path.join(cd,"handwritten_model/model-29.meta"))
+#         saver.restore(sess,os.path.join(cd,os.path.join("handwritten_model/model-29")))
+#         images = []
+#         colors = [ImageColor.getrgb(c) for c in text_color.split(",")]
+#         c1, c2 = colors[0], colors[-1]
 
-        color = "#{:02x}{:02x}{:02x}".format(
-            rnd.randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
-            rnd.randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
-            rnd.randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
-        )
+#         color = "#{:02x}{:02x}{:02x}".format(
+#             rnd.randint(min(c1[0], c2[0]), max(c1[0], c2[0])),
+#             rnd.randint(min(c1[1], c2[1]), max(c1[1], c2[1])),
+#             rnd.randint(min(c1[2], c2[2]), max(c1[2], c2[2])),
+#         )
 
-        for word in text.split(" "):
-            _, window_data, kappa_data, stroke_data, coords = _sample_text(
-                sess, word, translation
-            )
+#         for word in text.split(" "):
+#             _, window_data, kappa_data, stroke_data, coords = _sample_text(
+#                 sess, word, translation
+#             )
 
-            strokes = np.array(stroke_data)
-            strokes[:, :2] = np.cumsum(strokes[:, :2], axis=0)
-            _, maxx = np.min(strokes[:, 0]), np.max(strokes[:, 0])
-            miny, maxy = np.min(strokes[:, 1]), np.max(strokes[:, 1])
+#             strokes = np.array(stroke_data)
+#             strokes[:, :2] = np.cumsum(strokes[:, :2], axis=0)
+#             _, maxx = np.min(strokes[:, 0]), np.max(strokes[:, 0])
+#             miny, maxy = np.min(strokes[:, 1]), np.max(strokes[:, 1])
 
-            fig, ax = plt.subplots(1, 1)
-            fig.patch.set_visible(False)
-            ax.axis("off")
+#             fig, ax = plt.subplots(1, 1)
+#             fig.patch.set_visible(False)
+#             ax.axis("off")
 
-            for stroke in _split_strokes(_cumsum(np.array(coords))):
-                plt.plot(stroke[:, 0], -stroke[:, 1], color=color)
+#             for stroke in _split_strokes(_cumsum(np.array(coords))):
+#                 plt.plot(stroke[:, 0], -stroke[:, 1], color=color)
 
-            fig.patch.set_alpha(0)
-            fig.patch.set_facecolor("none")
+#             fig.patch.set_alpha(0)
+#             fig.patch.set_facecolor("none")
 
-            canvas = plt.get_current_fig_manager().canvas
-            canvas.draw()
+#             canvas = plt.get_current_fig_manager().canvas
+#             canvas.draw()
             
-            s, (width, height) = canvas.print_to_buffer()
-            image = Image.frombytes(
-                "RGBA", (width, height), s
-            )
-            mask = Image.new("RGB", (width, height), (0, 0, 0))
+#             s, (width, height) = canvas.print_to_buffer()
+#             image = Image.frombytes(
+#                 "RGBA", (width, height), s
+#             )
+#             mask = Image.new("RGB", (width, height), (0, 0, 0))
             
-            images.append(_crop_white_borders(image))
+#             images.append(_crop_white_borders(image))
 
-            plt.close()
+#             plt.close()
 
-        return _join_images(images), mask
+#         return _join_images(images), mask
