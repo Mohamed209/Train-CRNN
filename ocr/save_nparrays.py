@@ -40,7 +40,7 @@ for sample in data:
         images[i] = img
         i += 1
     else:
-        with open(DATA_PATH+sample, 'r') as s:
+        with open(DATA_PATH+sample, 'r',encoding='utf-8') as s:
             sent = s.readlines()
             text.append(sent)
             label_length[j] = len(sent[0])
@@ -50,7 +50,7 @@ for sample in data:
 gt_text = []
 textnum = []
 for line in text:
-    data = line[0]
+    data = line[0].strip()
     textnum.append(text_to_labels(data))
 for i in range(len(textnum)):
     gt_text.append(textnum[i])

@@ -175,7 +175,7 @@ train_model.compile(
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
                           steps_per_epoch=TRAIN_SAMPLES//64,
