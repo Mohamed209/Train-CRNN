@@ -10,20 +10,20 @@ import seaborn
 from PIL import Image, ImageColor
 from collections import namedtuple
 
-def download_model_weights():
-    from pathlib import Path
-    import urllib.request 
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    for k in ['model-29.data-00000-of-00001','model-29.index','model-29.meta','translation.pkl']:
-        download_dir = Path(cwd)/'handwritten_model/'
-        download_dir.mkdir(exist_ok=True,parents=True)
-        if (download_dir/f'{k}').exists(): continue
-        print(f'file {k} not found, downloading from git repo..')
-        urllib.request.urlretrieve(
-            f'https://raw.github.com/Belval/TextRecognitionDataGenerator/master/trdg/handwritten_model/{k}', 
-            download_dir/f'{k}')
-        print(f'file {k} saved to disk')
-    return cwd
+# def download_model_weights():
+#     from pathlib import Path
+#     import urllib.request 
+#     cwd = os.path.dirname(os.path.abspath(__file__))
+#     for k in ['model-29.data-00000-of-00001','model-29.index','model-29.meta','translation.pkl']:
+#         download_dir = Path(cwd)/'handwritten_model/'
+#         download_dir.mkdir(exist_ok=True,parents=True)
+#         if (download_dir/f'{k}').exists(): continue
+#         print(f'file {k} not found, downloading from git repo..')
+#         urllib.request.urlretrieve(
+#             f'https://raw.github.com/Belval/TextRecognitionDataGenerator/master/trdg/handwritten_model/{k}', 
+#             download_dir/f'{k}')
+#         print(f'file {k} saved to disk')
+#     return cwd
 
 def _sample(e, mu1, mu2, std1, std2, rho):
     cov = np.array([[std1 * std1, std1 * std2 * rho], [std1 * std2 * rho, std2 * std2]])
