@@ -139,7 +139,7 @@ test_model = Model(inputs, outputs)
 
 print("original model summary >>>", test_model.summary())
 
-test_model.save('slim_test_model.h5')
+test_model.save('arch/test_model.h5')
 
 max_label_len = 8
 labels = Input(name='the_labels', shape=[max_label_len], dtype='float32')
