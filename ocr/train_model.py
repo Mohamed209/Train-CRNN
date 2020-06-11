@@ -17,24 +17,15 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 import h5py
 import math
-import sys
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
 
-mode = sys.argv[1]
-ckpt = sys.argv[2]
-assert mode in [
-    'fine_tune', 'from_scratch'], "supported modes is to generate data for training from scratch or finetune [fine_tune,from_scratch]"
-DATASET_PATH = '../dataset/'+mode+'_rcpt_dataset.h5'
-if mode == 'from_scratch':
-    TRAIN_SAMPLES = 200000
-    TEST_SAMPLES = 40000
-elif mode == 'fine_tune':
-    TRAIN_SAMPLES = 1716
-    TEST_SAMPLES = 430
+DATASET_PATH = '../dataset/dataset.h5'
+TRAIN_SAMPLES = 40000
+TEST_SAMPLES = 10000
 # utils
 
-letters = [ch for ch in araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩']
+letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
 
 
 def labels_to_text(labels):
@@ -56,7 +47,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path=DATASET_PATH):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8, dataset_path=DATASET_PATH):
     dataset = h5py.File(dataset_path, 'r')
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
@@ -82,7 +73,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, ba
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=40, batch_size=32, train_size=0.8, dataset_path=DATASET_PATH):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8, dataset_path=DATASET_PATH):
     dataset = h5py.File(dataset_path, 'r')
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
@@ -142,7 +133,7 @@ blstm_1 = BatchNormalization()(blstm_1)
 blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
                              dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
 blstm_2 = BatchNormalization()(blstm_2)
-outputs = Dense(len(letters)+10, activation='softmax')(blstm_2)
+outputs = Dense(len(letters), activation='softmax')(blstm_2)
 
 test_model = Model(inputs, outputs)
 
@@ -150,7 +141,7 @@ print("original model summary >>>", test_model.summary())
 
 test_model.save('slim_test_model.h5')
 
-max_label_len = 40
+max_label_len = 8
 labels = Input(name='the_labels', shape=[max_label_len], dtype='float32')
 input_length = Input(name='input_length', shape=[1], dtype='int64')
 label_length = Input(name='label_length', shape=[1], dtype='int64')
@@ -169,25 +160,26 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 # load weights case finetune
-if mode == 'fine_tune':
-    train_model.load_weights(ckpt)
-    # train model only from last conv layer to the end
-    for layer in train_model.layers[:-8]:
-        layer.trainable = False
-    print("fine tuned model summary >> ",train_model.summary())
-if mode=='fine_tune':
-	epochs = 300
-else : epochs = 50
+# if mode == 'fine_tune':
+#     train_model.load_weights(ckpt)
+#     # train model only from last conv layer to the end
+#     for layer in train_model.layers[:-8]:
+#         layer.trainable = False
+#     print("fine tuned model summary >> ", train_model.summary())
+# if mode == 'fine_tune':
+#     epochs = 300
+# else:
+epochs = 50
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/'+mode+'_slimCRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
+    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=5)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=TRAIN_SAMPLES//32,
-                          validation_steps=TEST_SAMPLES//32,
+                          steps_per_epoch=TRAIN_SAMPLES//64,
+                          validation_steps=TEST_SAMPLES//64,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])

@@ -1,5 +1,6 @@
 from ..data_generator import FakeTextDataGenerator
 from ..utils import load_dict, load_fonts
+import numpy as np
 
 
 class GeneratorFromStrings:
@@ -11,22 +12,22 @@ class GeneratorFromStrings:
         count=-1,
         fonts=[],
         language="en",
-        size=32,
-        skewing_angle=0,
+        size=[32],
+        skewing_angle=[0],
         random_skew=False,
-        blur=0,
+        blur=[0],
         random_blur=False,
-        background_type=0,
-        distorsion_type=0,
-        distorsion_orientation=0,
+        background_type=[0],
+        distorsion_type=[0],
+        distorsion_orientation=[0],
         is_handwritten=False,
         width=-1,
         alignment=1,
-        text_color="#282828",
-        orientation=0,
-        space_width=1.0,
-        character_spacing=0,
-        margins=(5, 5, 5, 5),
+        text_color=["#282828"],
+        orientation=[0],
+        space_width=[1.0],
+        character_spacing=[0],
+        margins=[(5, 5, 5, 5)],
         fit=False,
         output_mask=False,
     ):
@@ -66,32 +67,37 @@ class GeneratorFromStrings:
         if self.generated_count == self.count:
             raise StopIteration
         self.generated_count += 1
+        string_idx = np.random.choice(len(self.strings))
         return (
             FakeTextDataGenerator.generate(
                 self.generated_count,
-                self.strings[(self.generated_count - 1) % len(self.strings)],
-                self.fonts[(self.generated_count - 1) % len(self.fonts)],
+                self.strings[string_idx],
+                self.fonts[np.random.choice(len(self.fonts))],
                 None,
-                self.size,
+                self.size[np.random.choice(len(self.size))],
                 None,
-                self.skewing_angle,
+                self.skewing_angle[np.random.choice(len(self.skewing_angle))],
                 self.random_skew,
-                self.blur,
+                self.blur[np.random.choice(len(self.blur))],
                 self.random_blur,
-                self.background_type,
-                self.distorsion_type,
-                self.distorsion_orientation,
+                self.background_type[np.random.choice(
+                    len(self.background_type))],
+                self.distorsion_type[np.random.choice(
+                    len(self.distorsion_type))],
+                self.distorsion_orientation[np.random.choice(
+                    len(self.distorsion_orientation))],
                 self.is_handwritten,
                 0,
                 self.width,
                 self.alignment,
-                self.text_color,
-                self.orientation,
-                self.space_width,
-                self.character_spacing,
-                self.margins,
+                self.text_color[np.random.choice(len(self.text_color))],
+                self.orientation[np.random.choice(len(self.orientation))],
+                self.space_width[np.random.choice(len(self.space_width))],
+                self.character_spacing[np.random.choice(
+                    len(self.character_spacing))],
+                self.margins[np.random.choice(len(self.margins))],
                 self.fit,
                 self.output_mask,
             ),
-            self.strings[(self.generated_count - 1) % len(self.strings)],
+            self.strings[string_idx],
         )

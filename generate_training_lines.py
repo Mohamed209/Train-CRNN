@@ -15,7 +15,7 @@ from tqdm import tqdm
 import pyarabic.araby as araby
 import string
 from multiprocessing import Pool
-letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
+letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]
@@ -23,9 +23,8 @@ INV_WEIGHT = [0.3, 0.7]
 FIT = False
 SAVE_PATH = 'dataset/generated_data/'
 eng_lines = []
-mixed_lines = []
-mixed_lines_no_res = []
-text_size = [50, 60, 70]
+ara_lines = []
+text_size = [40, 50, 60]
 blur = [0, 1]
 skewing_angle = [0, 1, 2]
 background_type = [1, 0, 2]
@@ -50,66 +49,46 @@ def invert(pil_img):
 
 def generate_english_lines():
     flag = False
-    with open('dataset/text_corpus/recpts_eng.txt') as f:
+    with open('dataset/text_corpus/engmeters.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
-            if line.strip():
-                for ch in list(set(line)):
-                    if ch not in letters:
-                        flag = True
-                        print("unwanted eng char ", ch)
-                        break
-                if flag:
-                    flag = False
-                    continue
-                eng_lines.append(line)
-        random.shuffle(eng_lines)
+            eng_lines.append(line)
 
 
-def generate_mixed_lines():
+def generate_arabic_lines():
     flag = False
-    with open('dataset/text_corpus/recpts_ara.txt', mode='r', encoding='utf-8') as f:
+    with open('dataset/text_corpus/arameters.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
-            if line.strip():
-                for ch in list(set(line)):
-                    if ch not in letters:
-                        flag = True
-                        print("unwanted ara char ", ch)
-                        break
-                if flag:
-                    flag = False
-                    continue
-                mixed_lines.append(line)
-        random.shuffle(mixed_lines)
-        mixed_lines_no_res.extend(mixed_lines)
-        for i in range(len(mixed_lines)):
-            mixed_lines[i] = arabic_reshaper.reshape(mixed_lines[i])
-            mixed_lines[i] = get_display(mixed_lines[i])
+            ara_lines.append(line)
+        # mixed_lines_no_res.extend(mixed_lines)
+        # for i in range(len(mixed_lines)):
+        #     mixed_lines[i] = arabic_reshaper.reshape(mixed_lines[i])
+        #     mixed_lines[i] = get_display(mixed_lines[i])
 
 
-generate_mixed_lines()
+generate_arabic_lines()
 generate_english_lines()
 
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=100000,
-    size=np.random.choice(text_size),
-    distorsion_type=np.random.choice(distorsion_type),
-    skewing_angle=np.random.choice(skewing_angle),
-    blur=np.random.choice(blur),
-    background_type=np.random.choice(background_type),
-    text_color=np.random.choice(text_color)
+    count=25,
+    size=text_size,
+    distorsion_type=distorsion_type,
+    skewing_angle=skewing_angle,
+    blur=blur,
+    background_type=background_type,
+    text_color=text_color
 )
-mixed_generator = GeneratorFromStrings(
-    strings=mixed_lines,
-    language='mix',
-    count=100000,
-    size=np.random.choice(text_size),
-    distorsion_type=np.random.choice(distorsion_type),
-    skewing_angle=np.random.choice(skewing_angle),
-    blur=np.random.choice(blur),
-    background_type=np.random.choice(background_type),
-    text_color=np.random.choice(text_color)
+arabic_generator = GeneratorFromStrings(
+    strings=ara_lines,
+    language='ar',
+    count=25,
+    size=text_size,
+    distorsion_type=distorsion_type,
+    skewing_angle=skewing_angle,
+    blur=blur,
+    background_type=background_type,
+    text_color=text_color
 )
 
 
@@ -125,7 +104,7 @@ def save_eng_lines(img, lbl):
         label.writelines(lbl)
 
 
-def save_mixed_lines(img, lbl):
+def save_ara_lines(img, lbl):
     if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
         img = add_fake_shdows(img)
     elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
@@ -134,13 +113,13 @@ def save_mixed_lines(img, lbl):
     ID = str(uuid.uuid4())
     img.save(SAVE_PATH+ID+'.png')
     with open(SAVE_PATH+ID+'.txt', 'w', encoding='utf-8') as label:
-        label.writelines(mixed_lines_no_res[mixed_lines.index(lbl)])
+        label.writelines(lbl)
 
 
 if __name__ == "__main__":
     with Pool() as pool:
-        pool.starmap(save_mixed_lines, [(img, lbl)
-                                        for (img, lbl) in tqdm(mixed_generator)])
+        pool.starmap(save_ara_lines, [(img, lbl)
+                                      for (img, lbl) in tqdm(arabic_generator)])
     with Pool() as pool:
         pool.starmap(save_eng_lines, [(img, lbl)
                                       for (img, lbl) in tqdm(english_generator)])
