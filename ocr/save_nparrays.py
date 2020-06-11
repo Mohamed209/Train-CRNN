@@ -6,11 +6,8 @@ import os
 import string
 import pyarabic.araby as araby
 import sys
-mode = sys.argv[1]
-assert mode in [
-    'fine_tune', 'from_scratch'], "supported modes is to generate data for training from scratch or finetune [finetune,from_scratch]"
 # utils
-letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
+letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
 
 
 def labels_to_text(labels):
@@ -25,10 +22,7 @@ def text_to_labels(text):
 img_h = 32
 img_w = 432
 # data loader script expects data to be found in folder as pairs of images , txt files contain labels
-if mode == 'fine_tune':
-    DATA_PATH = '/home/mossad/ocr/azka-annotation/training_data/'  # training server path
-elif mode == 'from_scratch':
-    DATA_PATH = '../dataset/generated_data/'
+DATA_PATH = '../dataset/generated_data/'
 data = sorted(os.listdir(DATA_PATH))
 images = np.zeros(shape=(len(data)//2, img_h, img_w, 1))
 label_length = np.zeros((len(data)//2, 1), dtype=np.int64)
@@ -62,14 +56,14 @@ for i in range(len(textnum)):
     gt_text.append(textnum[i])
 
 gt_padded_txt = pad_sequences(
-    gt_text, maxlen=40, padding='post', truncating='post', value=0)
+    gt_text, maxlen=8, padding='post', truncating='post', value=0)
 
 print("images >>", images.shape)
 print("text >>", gt_padded_txt.shape)
 print("label length>>", label_length.shape)
 
 # save np arrays to hard disk so as not to generate them from scratch in the begining of each training session
-h5 = h5py.File('../dataset/'+mode+'_rcpt_dataset.h5', 'w')
+h5 = h5py.File('../dataset/dataset.h5', 'w')
 h5.create_dataset('images', data=images)
 h5.create_dataset('text', data=gt_padded_txt)
 h5.create_dataset('label_length', data=label_length)
