@@ -71,7 +71,7 @@ generate_english_lines()
 english_generator = GeneratorFromStrings(
     strings=eng_lines,
     language='en',
-    count=25,
+    count=25000,
     size=text_size,
     distorsion_type=distorsion_type,
     skewing_angle=skewing_angle,
@@ -82,7 +82,7 @@ english_generator = GeneratorFromStrings(
 arabic_generator = GeneratorFromStrings(
     strings=ara_lines,
     language='ar',
-    count=25,
+    count=25000,
     size=text_size,
     distorsion_type=distorsion_type,
     skewing_angle=skewing_angle,
