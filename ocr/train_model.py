@@ -17,12 +17,22 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 import h5py
 import math
+import sys
 # Check all available devices if GPU is available
 print(device_lib.list_local_devices())
 
+mode = sys.argv[1]
+ckpt = sys.argv[2]
+assert mode in [
+    'fine_tune', 'from_scratch'], "supported modes =====> to generate data for training from scratch or finetune [fine_tune,from_scratch]"
+
 DATASET_PATH = '../dataset/dataset.h5'
-TRAIN_SAMPLES = 40000
-TEST_SAMPLES = 10000
+dataset = h5py.File(DATASET_PATH, 'r')
+print("Loaded Dataset with shape >>> ", dataset['images'].shape)
+TRAIN_SAMPLES = int(0.8*dataset['images'].shape[0])
+print("Train samples >>>", TRAIN_SAMPLES)
+TEST_SAMPLES = dataset['images'].shape[0]-TRAIN_SAMPLES
+print("Test samples >>> ", TEST_SAMPLES)
 # utils
 
 letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
@@ -47,14 +57,13 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8, dataset_path=DATASET_PATH):
-    dataset = h5py.File(dataset_path, 'r')
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8):
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 107
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 106
         # choose randomly 128 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(train_indexes, size=batch_size)
@@ -73,15 +82,14 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, bat
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8, dataset_path=DATASET_PATH):
-    dataset = h5py.File(dataset_path, 'r')
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8):
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 107
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 106
         # choose randomly 32 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(test_indexes, size=batch_size)
@@ -140,6 +148,7 @@ test_model = Model(inputs, outputs)
 print("original model summary >>>", test_model.summary())
 
 test_model.save('arch/test_model.h5')
+print("Saved model architecture")
 
 max_label_len = 8
 labels = Input(name='the_labels', shape=[max_label_len], dtype='float32')
@@ -160,16 +169,17 @@ loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
 train_model = Model(
     inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
 # load weights case finetune
-# if mode == 'fine_tune':
-#     train_model.load_weights(ckpt)
-#     # train model only from last conv layer to the end
-#     for layer in train_model.layers[:-8]:
-#         layer.trainable = False
-#     print("fine tuned model summary >> ", train_model.summary())
-# if mode == 'fine_tune':
-#     epochs = 300
-# else:
-epochs = 50
+if mode == 'fine_tune':
+    train_model.load_weights(ckpt)
+    print("Loaded checkpoint to continue training")
+    # train model only from last conv layer to the end
+    for layer in train_model.layers[:-8]:
+        layer.trainable = False
+    print("fine tuned model summary >> ", train_model.summary())
+    epochs = 10
+
+else:
+    epochs = 50
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
