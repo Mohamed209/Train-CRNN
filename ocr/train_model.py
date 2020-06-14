@@ -57,7 +57,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8):
+def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=32, train_size=0.8):
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
@@ -82,7 +82,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, bat
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=64, train_size=0.8):
+def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=32, train_size=0.8):
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
     while True:
@@ -188,8 +188,8 @@ checkpoint = ModelCheckpoint(
     filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
-                          steps_per_epoch=TRAIN_SAMPLES//64,
-                          validation_steps=TEST_SAMPLES//64,
+                          steps_per_epoch=TRAIN_SAMPLES//32,
+                          validation_steps=TEST_SAMPLES//32,
                           epochs=epochs,
                           verbose=1,
                           callbacks=[checkpoint])
