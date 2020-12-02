@@ -14,7 +14,7 @@ dataset/dataset.h5
 dataset/image
 dataset/label
 dataset/clean.py
-data/gentest
+dataset/gentest
 # Distribution / packaging
 .Python
 env/
