@@ -71,7 +71,7 @@ generate_words()
 english_generator = GeneratorFromStrings(
     strings=engwords,
     language='en',
-    count=100,
+    count=25000,
     size=text_size,
     blur=blur,
     background_type=background_type,
@@ -80,7 +80,7 @@ english_generator = GeneratorFromStrings(
 arabic_generator = GeneratorFromStrings(
     strings=arawords,
     language='ar',
-    count=100,
+    count=25000,
     size=text_size,
     blur=blur,
     background_type=background_type,
