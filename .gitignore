@@ -11,6 +11,10 @@ demo.py
 demoo.py
 out/
 dataset/dataset.h5
+dataset/image
+dataset/label
+dataset/clean.py
+data/gentest
 # Distribution / packaging
 .Python
 env/

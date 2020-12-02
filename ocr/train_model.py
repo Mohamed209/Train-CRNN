@@ -22,7 +22,8 @@ import sys
 print(device_lib.list_local_devices())
 
 mode = sys.argv[1]
-ckpt = sys.argv[2]
+if mode =='fine_tune':
+    ckpt = sys.argv[2]
 assert mode in [
     'fine_tune', 'from_scratch'], "supported modes =====> to generate data for training from scratch or finetune [fine_tune,from_scratch]"
 
@@ -35,7 +36,7 @@ TEST_SAMPLES = dataset['images'].shape[0]-TRAIN_SAMPLES
 print("Test samples >>> ", TEST_SAMPLES)
 # utils
 
-letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
+letters = araby.LETTERS+string.printable+u' ٠١٢٣٤٥٦٧٨٩'
 
 
 def labels_to_text(labels):
@@ -57,7 +58,7 @@ def ctc_lambda_func(args):
 
 
 # data loader
-def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=32, train_size=0.8):
+def train_data_generator(img_w=128, img_h=32, no_channels=1, text_max_len=15, batch_size=32, train_size=0.8):
     train_indexes = list(range(int(train_size*dataset['images'].shape[0])))
     while True:
         images = np.zeros((batch_size, img_h, img_w, no_channels))
@@ -82,7 +83,7 @@ def train_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, bat
         yield (inputs, outputs)
 
 
-def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batch_size=32, train_size=0.8):
+def test_data_generator(img_w=128, img_h=32, no_channels=1, text_max_len=15, batch_size=32, train_size=0.8):
     test_indexes = list(
         range(int(train_size*dataset['images'].shape[0]), dataset['images'].shape[0]))
     while True:
@@ -109,39 +110,44 @@ def test_data_generator(img_w=432, img_h=32, no_channels=1, text_max_len=8, batc
 
 
 # network >>>>> CNN + RNN + CTC loss
-# input with shape of height=32 and width=432
-inputs = Input(shape=(32, 432, 1))
-conv_1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
-conv_1 = BatchNormalization()(conv_1)
+# input with shape of height=32 and width=128 
+inputs = Input(shape=(32,128,1))
+ 
+# convolution layer with kernel size (3,3)
+conv_1 = Conv2D(64, (3,3), activation = 'relu', padding='same')(inputs)
+# poolig layer with kernel size (2,2)
 pool_1 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_1)
-####################################################################################
-conv_2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool_1)
-conv_2 = BatchNormalization()(conv_2)
+ 
+conv_2 = Conv2D(128, (3,3), activation = 'relu', padding='same')(pool_1)
 pool_2 = MaxPooling2D(pool_size=(2, 2), strides=2)(conv_2)
-###################################################################################
-conv_3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool_2)
-conv_3 = BatchNormalization()(conv_3)
-conv_4 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv_3)
-conv_4 = BatchNormalization()(conv_4)
+ 
+conv_3 = Conv2D(256, (3,3), activation = 'relu', padding='same')(pool_2)
+ 
+conv_4 = Conv2D(256, (3,3), activation = 'relu', padding='same')(conv_3)
+# poolig layer with kernel size (2,1)
 pool_4 = MaxPooling2D(pool_size=(2, 1))(conv_4)
-##################################################################################
-conv_5 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool_4)
-conv_5 = BatchNormalization()(conv_5)
-conv_6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv_5)
+ 
+conv_5 = Conv2D(512, (3,3), activation = 'relu', padding='same')(pool_4)
+# Batch normalization layer
+batch_norm_5 = BatchNormalization()(conv_5)
+ 
+conv_6 = Conv2D(512, (3,3), activation = 'relu', padding='same')(batch_norm_5)
 batch_norm_6 = BatchNormalization()(conv_6)
 pool_6 = MaxPooling2D(pool_size=(2, 1))(batch_norm_6)
-conv_7 = Conv2D(512, (2, 2), activation='relu')(pool_6)
-conv_7 = BatchNormalization()(conv_7)
-# feature maps to sequence
+ 
+conv_7 = Conv2D(512, (2,2), activation = 'relu')(pool_6)
+
+
 squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
-# bidirectional LSTM layers with units=256
-blstm_1 = Bidirectional(
-    LSTM(256, return_sequences=True, dropout=0.2, kernel_initializer='he_normal'))(squeezed)
-blstm_1 = BatchNormalization()(blstm_1)
-blstm_2 = Bidirectional(LSTM(256, return_sequences=True,
-                             dropout=0.2, kernel_initializer='he_normal'))(blstm_1)
-blstm_2 = BatchNormalization()(blstm_2)
-outputs = Dense(len(letters)+1, activation='softmax')(blstm_2)
+ 
+# bidirectional LSTM layers with units=128
+blstm_1 = Bidirectional(LSTM(128, return_sequences=True, dropout = 0.2))(squeezed)
+blstm_2 = Bidirectional(LSTM(128, return_sequences=True, dropout = 0.2))(blstm_1)
+ 
+outputs = Dense(len(letters)+1, activation = 'softmax')(blstm_2)
+
+# model to be used at test time
+act_model = Model(inputs, outputs)
 
 test_model = Model(inputs, outputs)
 
@@ -150,7 +156,7 @@ print("original model summary >>>", test_model.summary())
 test_model.save('arch/test_model.h5')
 print("Saved model architecture")
 
-max_label_len = 8
+max_label_len = 15
 labels = Input(name='the_labels', shape=[max_label_len], dtype='float32')
 input_length = Input(name='input_length', shape=[1], dtype='int64')
 label_length = Input(name='label_length', shape=[1], dtype='int64')
@@ -179,13 +185,13 @@ if mode == 'fine_tune':
     epochs = 10
 
 else:
-    epochs = 50
+    epochs = 25
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
 #     monitor='val_loss', min_delta=0.001, patience=4, mode='min', verbose=1)
 checkpoint = ModelCheckpoint(
-    filepath='ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
+    filepath='/mount/gdrive//ftocr_ckpts/CRNN--{epoch:02d}--{val_loss:.3f}.hdf5', monitor='val_loss', verbose=1, mode='min', period=10)
 train_model.fit_generator(generator=train_data_generator(),
                           validation_data=test_data_generator(),
                           steps_per_epoch=TRAIN_SAMPLES//32,

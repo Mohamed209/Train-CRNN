@@ -15,20 +15,25 @@ from tqdm import tqdm
 import pyarabic.araby as araby
 import string
 from multiprocessing import Pool
-letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
+
+ara_letters = araby.LETTERS+u' ٠١٢٣٤٥٦٧٨٩'
+eng_letters = string.printable
+
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
-SAVE_PATH = 'dataset/generated_data/'
-eng_lines = []
-ara_lines = []
+SAVE_PATH = 'dataset/gentest/'
+
+arawords = []
+engwords = []
+
 text_size = [40, 50, 60]
 blur = [0, 1]
-skewing_angle = [0, 1, 2]
-background_type = [1, 0, 2]
-distorsion_type = [2, 0, 3]
+#skewing_angle = [0, 1, 2]
+background_type = [1, 0]
+#distorsion_type = [2, 0, 3]
 text_color = ["#000000", "#282828", "#505050"]
 
 
@@ -47,45 +52,36 @@ def invert(pil_img):
     return Image.fromarray(inv)
 
 
-def generate_english_lines():
-    flag = False
-    with open('dataset/text_corpus/engmeters.txt', mode='r', encoding='utf-8') as f:
+def generate_words():
+    with open('dataset/text_corpus/ftc.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
-            eng_lines.append(line)
+            if len(line) <=3:
+                continue
+            try :
+                line.encode('ascii')
+                engwords.append(line)
+            except UnicodeEncodeError :
+                line = arabic_reshaper.reshape(line)
+                line = get_display(line)
+                arawords.append(line)
 
 
-def generate_arabic_lines():
-    flag = False
-    with open('dataset/text_corpus/arameters.txt', mode='r', encoding='utf-8') as f:
-        for line in tqdm(f.readlines()):
-            ara_lines.append(line)
-        # mixed_lines_no_res.extend(mixed_lines)
-        # for i in range(len(mixed_lines)):
-        #     mixed_lines[i] = arabic_reshaper.reshape(mixed_lines[i])
-        #     mixed_lines[i] = get_display(mixed_lines[i])
-
-
-generate_arabic_lines()
-generate_english_lines()
+generate_words()
 
 english_generator = GeneratorFromStrings(
-    strings=eng_lines,
+    strings=engwords,
     language='en',
-    count=25000,
+    count=100,
     size=text_size,
-    distorsion_type=distorsion_type,
-    skewing_angle=skewing_angle,
     blur=blur,
     background_type=background_type,
     text_color=text_color
 )
 arabic_generator = GeneratorFromStrings(
-    strings=ara_lines,
+    strings=arawords,
     language='ar',
-    count=25000,
+    count=100,
     size=text_size,
-    distorsion_type=distorsion_type,
-    skewing_angle=skewing_angle,
     blur=blur,
     background_type=background_type,
     text_color=text_color
@@ -93,27 +89,31 @@ arabic_generator = GeneratorFromStrings(
 
 
 def save_eng_lines(img, lbl):
-    if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
-        img = add_fake_shdows(img)
-    elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
-        img = invert(img)
-    img = img.resize((432, 32), Image.ANTIALIAS)
+    # if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
+    #     img = add_fake_shdows(img)
+    # elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
+    #     img = invert(img)
+    img = img.resize((128, 32), Image.ANTIALIAS)
     ID = str(uuid.uuid4())
     img.save(SAVE_PATH+ID+'.png')
     with open(SAVE_PATH+ID+'.txt', 'w', encoding='utf-8') as label:
-        label.writelines(lbl)
+        label.write(lbl)
 
 
 def save_ara_lines(img, lbl):
-    if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
-        img = add_fake_shdows(img)
-    elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
-        img = invert(img)
-    img = img.resize((432, 32), Image.ANTIALIAS)
+    # if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
+    #     img = add_fake_shdows(img)
+    # elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
+    #     img = invert(img)
+    img = img.resize((128, 32), Image.ANTIALIAS)
     ID = str(uuid.uuid4())
     img.save(SAVE_PATH+ID+'.png')
+    if any(ch in u'٠١٢٣٤٥٦٧٩' for ch in lbl):
+        lbl=lbl
+    else:
+        lbl=lbl[::-1]
     with open(SAVE_PATH+ID+'.txt', 'w', encoding='utf-8') as label:
-        label.writelines(lbl)
+        label.write(lbl)
 
 
 if __name__ == "__main__":

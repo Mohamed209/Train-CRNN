@@ -7,7 +7,7 @@ import string
 import pyarabic.araby as araby
 import sys
 # utils
-letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
+letters = araby.LETTERS+string.printable+u' ٠١٢٣٤٥٦٧٨٩'
 
 
 def labels_to_text(labels):
@@ -17,10 +17,9 @@ def labels_to_text(labels):
 def text_to_labels(text):
     return list(map(lambda x: letters.index(x), text))
 
-
 # data loader
 img_h = 32
-img_w = 432
+img_w = 128
 # data loader script expects data to be found in folder as pairs of images , txt files contain labels
 DATA_PATH = '../dataset/generated_data/'
 data = sorted(os.listdir(DATA_PATH))
@@ -31,7 +30,7 @@ i = 0
 j = 0
 for sample in data:
     print("loaded >>>", sample)
-    if sample.split('.')[-1] == 'png':
+    if sample.split('.')[-1].lower() in ['png','jpg']:
         img = cv2.imread(DATA_PATH+sample, cv2.IMREAD_GRAYSCALE)
         img = cv2.resize(img, (img_w, img_h))
         img = img.astype(np.float32)
@@ -40,6 +39,7 @@ for sample in data:
         images[i] = img
         i += 1
     else:
+        print("loaded >>>", sample)
         with open(DATA_PATH+sample, 'r',encoding='utf-8') as s:
             sent = s.readlines()
             text.append(sent)
@@ -56,7 +56,7 @@ for i in range(len(textnum)):
     gt_text.append(textnum[i])
 
 gt_padded_txt = pad_sequences(
-    gt_text, maxlen=8, padding='post', truncating='post', value=0)
+    gt_text, maxlen=15, padding='post', truncating='post', value=0)
 
 print("images >>", images.shape)
 print("text >>", gt_padded_txt.shape)
