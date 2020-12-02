@@ -55,6 +55,7 @@ def invert(pil_img):
 def generate_words():
     with open('dataset/text_corpus/ftc.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
+            line = line.replace('\n','')
             if len(line) <=3:
                 continue
             try :

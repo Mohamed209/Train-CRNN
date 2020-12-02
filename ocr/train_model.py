@@ -36,7 +36,7 @@ TEST_SAMPLES = dataset['images'].shape[0]-TRAIN_SAMPLES
 print("Test samples >>> ", TEST_SAMPLES)
 # utils
 
-letters = araby.LETTERS+string.printable+u' ٠١٢٣٤٥٦٧٨٩'
+letters = araby.LETTERS+string.printable+u'٠١٢٣٤٥٦٧٨٩'
 
 
 def labels_to_text(labels):
@@ -64,7 +64,7 @@ def train_data_generator(img_w=128, img_h=32, no_channels=1, text_max_len=15, ba
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 106
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 31
         # choose randomly 128 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(train_indexes, size=batch_size)
@@ -90,7 +90,7 @@ def test_data_generator(img_w=128, img_h=32, no_channels=1, text_max_len=15, bat
         images = np.zeros((batch_size, img_h, img_w, no_channels))
         text = np.zeros((batch_size, text_max_len))
         label_length = np.zeros((batch_size, 1), dtype=np.int64)
-        input_length = np.ones((batch_size, 1), dtype=np.int64) * 106
+        input_length = np.ones((batch_size, 1), dtype=np.int64) * 31
         # choose randomly 32 samples of training data from hard disk and load them into memory
         i = 0
         samples_indexes = np.random.choice(test_indexes, size=batch_size)
@@ -144,7 +144,7 @@ squeezed = Lambda(lambda x: K.squeeze(x, 1))(conv_7)
 blstm_1 = Bidirectional(LSTM(128, return_sequences=True, dropout = 0.2))(squeezed)
 blstm_2 = Bidirectional(LSTM(128, return_sequences=True, dropout = 0.2))(blstm_1)
  
-outputs = Dense(len(letters)+1, activation = 'softmax')(blstm_2)
+outputs = Dense(len(letters)+2, activation = 'softmax')(blstm_2)
 
 # model to be used at test time
 act_model = Model(inputs, outputs)
