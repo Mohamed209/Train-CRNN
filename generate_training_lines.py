@@ -24,7 +24,7 @@ SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
-SAVE_PATH = 'dataset/gentest/'
+SAVE_PATH = 'dataset/generated_data/'
 
 arawords = []
 engwords = []
@@ -55,8 +55,12 @@ def invert(pil_img):
 def generate_words():
     with open('dataset/text_corpus/ftc.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
+<<<<<<< HEAD
             line = line.replace('\n','')
             if len(line) <=3:
+=======
+            if len(line) <3:
+>>>>>>> 033fd7a85f5e68a9093d776724dcbf392525acbf
                 continue
             try :
                 line.encode('ascii')
@@ -72,7 +76,7 @@ generate_words()
 english_generator = GeneratorFromStrings(
     strings=engwords,
     language='en',
-    count=100,
+    count=25000,
     size=text_size,
     blur=blur,
     background_type=background_type,
@@ -81,7 +85,7 @@ english_generator = GeneratorFromStrings(
 arabic_generator = GeneratorFromStrings(
     strings=arawords,
     language='ar',
-    count=100,
+    count=25000,
     size=text_size,
     blur=blur,
     background_type=background_type,
