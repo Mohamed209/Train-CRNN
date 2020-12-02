@@ -24,7 +24,7 @@ SHADOW_WEIGHT = [0.4, 0.6]
 INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
-SAVE_PATH = 'dataset/gentest/'
+SAVE_PATH = 'dataset/generated_data/'
 
 arawords = []
 engwords = []
@@ -55,7 +55,7 @@ def invert(pil_img):
 def generate_words():
     with open('dataset/text_corpus/ftc.txt', mode='r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
-            if len(line) <=3:
+            if len(line) <3:
                 continue
             try :
                 line.encode('ascii')
