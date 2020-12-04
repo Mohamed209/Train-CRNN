@@ -185,7 +185,7 @@ if mode == 'fine_tune':
     epochs = 10
 
 else:
-    epochs = 25
+    epochs = 50
 train_model.compile(
     loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizers.adadelta())
 # early_stop = EarlyStopping(
