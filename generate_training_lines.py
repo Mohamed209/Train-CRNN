@@ -20,12 +20,12 @@ import nltk
 from nltk.corpus import webtext
 import h5py
 
-ara_letters = araby.LETTERS+u' ٠١٢٣٤٥٦٧٨٩'
-eng_letters = string.printable
-letters = ara_letters+eng_letters
+ara_letters = araby.LETTERS+u' ٠١٢٣٤٥٦٧٨٩,()/\-'
+eng_letters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,()/\- '
+letters = ara_letters
 
 SHADOW_DISTRIBUTION = [1, 0]
-SHADOW_WEIGHT = [0.4, 0.6]
+SHADOW_WEIGHT = [0.3, 0.7]
 INV_DISTRIBUTION = [1, 0]
 INV_WEIGHT = [0.3, 0.7]
 FIT = False
@@ -39,21 +39,6 @@ distorsion_type = [2, 0, 3]
 text_color = ["#000000", "#282828", "#505050"]
 
 
-def add_fake_shdows(pil_img):
-    open_cv_image = np.array(pil_img)
-    # Convert RGB to BGR
-    open_cv_image = open_cv_image[:, :, ::-1].copy()
-    open_cv_image = add_parallel_light(open_cv_image)
-    return Image.fromarray(open_cv_image)
-
-
-def invert(pil_img):
-    open_cv_image = np.array(pil_img)
-    open_cv_image = open_cv_image[:, :, ::-1].copy()
-    inv = cv2.bitwise_not(open_cv_image)
-    return Image.fromarray(inv)
-
-
 arabic_words =[]
 arabic_words_not_reshaped =[]
 english_words = []
@@ -64,7 +49,7 @@ def generate_words():
     # generate arabic words
     print("Reading Arabic Corpus :)")
     with open('dataset/text_corpus/ara_corpus.txt', encoding='utf-8') as f:
-        for line in tqdm(f.readlines()[:2000]):
+        for line in tqdm(f.readlines()):
             line = line.replace('\n','').strip()
             arabic_words_not_reshaped.append(line)
             line = arabic_reshaper.reshape(line)
@@ -74,22 +59,22 @@ def generate_words():
     # generate arabic numbers
     print("Reading Arabic Numbers Corpus :)")
     with open('dataset/text_corpus/aranums.txt', encoding='utf-8') as f:
-        for line in tqdm(f.readlines()[:2000]):
+        for line in tqdm(f.readlines()):
             line = line.replace('\n','').strip()
             if len(line)<1:
                 continue
             arabic_nums.append(line)
 
-    print("Reading English Numbers Corpus :)")
-    with open('dataset/text_corpus/engnums.txt', encoding='utf-8') as f:
-        for line in tqdm(f.readlines()[:2000]):
-            line = line.replace('\n','').strip()
-            if len(line)<1:
-                continue
-            english_nums.append(line)
+    # print("Reading English Numbers Corpus :)")
+    # with open('dataset/text_corpus/engnums.txt', encoding='utf-8') as f:
+    #     for line in tqdm(f.readlines()):
+    #         line = line.replace('\n','').strip()
+    #         if len(line)<1:
+    #             continue
+    #         english_nums.append(line)
 
-    print("Reading English corpus from NLTK :)")
-    english_words.extend([w for w in webtext.words('firefox.txt')])
+    # print("Reading English corpus from NLTK :)")
+    # english_words.extend([w for w in webtext.words('firefox.txt')])
     
 
 
@@ -98,28 +83,29 @@ generate_words()
 
 gen_count = 100000
 nums_count = 50000
-english_generator = GeneratorFromStrings(
-    strings=english_words,
-    language='en',
-    count=gen_count,
-    size=text_size,
-    blur=blur,
-    background_type=background_type,
-    text_color=text_color,
-    distorsion_type = distorsion_type,
-    skewing_angle = skewing_angle
-)
-english_generator_nums = GeneratorFromStrings(
-    strings=english_nums,
-    language='en',
-    count=nums_count,
-    size=text_size,
-    blur=blur,
-    background_type=background_type,
-    text_color=text_color,
-    distorsion_type = distorsion_type,
-    skewing_angle = skewing_angle
-)
+
+# english_generator = GeneratorFromStrings(
+#     strings=english_words,
+#     language='en',
+#     count=gen_count,
+#     size=text_size,
+#     blur=blur,
+#     background_type=background_type,
+#     text_color=text_color,
+#     distorsion_type = distorsion_type,
+#     skewing_angle = skewing_angle
+# )
+# english_generator_nums = GeneratorFromStrings(
+#     strings=english_nums,
+#     language='en',
+#     count=nums_count,
+#     size=text_size,
+#     blur=blur,
+#     background_type=background_type,
+#     text_color=text_color,
+#     distorsion_type = distorsion_type,
+#     skewing_angle = skewing_angle
+# )
 arabic_generator = GeneratorFromStrings(
     strings=arabic_words,
     language='ar',
@@ -159,7 +145,7 @@ labels = []
 
 if __name__ == "__main__":
 
-    gens = [arabic_generator,english_generator,arabic_generator_nums,english_generator_nums]
+    gens = [arabic_generator,arabic_generator_nums]
     for i in range(len(gens)):
         for (img,lbl) in tqdm(gens[i]):
             if i ==0:
@@ -169,8 +155,16 @@ if __name__ == "__main__":
                     print("contain toxic chars ",[char for char in lbl])
                     continue
             else:
-                labels.append(text_to_labels(lbl))
+                try:
+                    labels.append(text_to_labels(lbl))
+                except ValueError:
+                    print("contain toxic chars ",[char for char in lbl])
+                    continue
             npimage = np.array(img)
+            if np.random.choice(SHADOW_DISTRIBUTION, p=SHADOW_WEIGHT):
+                npimage = add_parallel_light(npimage)
+            elif np.random.choice(INV_DISTRIBUTION, p=INV_WEIGHT):
+                npimage = 255-npimage
             npimage = cv2.cvtColor(npimage, cv2.COLOR_BGR2GRAY)
             npimage = cv2.resize(npimage,(img_w,img_h))
             npimage = npimage.astype(np.float32)
@@ -179,7 +173,7 @@ if __name__ == "__main__":
             images.append(npimage)
             label_length.append(len(lbl))
     
-    gt_padded_txt = pad_sequences(labels, maxlen=max_label_len, padding='post', truncating='post', value=letters.index('\t'))
+    gt_padded_txt = pad_sequences(labels, maxlen=max_label_len, padding='post', truncating='post', value=0)
     
     images_tensor = np.array(images)
     
@@ -189,10 +183,10 @@ if __name__ == "__main__":
     print("images {} label_lenght {} label {}".format(images_tensor.shape,label_length_tensor.shape,gt_padded_txt.shape))
 
 
-    # for i in range(len(images_tensor)):
-    #     print(labels_to_text(gt_padded_txt[i]))
-    #     disp = images_tensor[i]*255.0
-    #     cv2.imwrite('dataset/generated_data/'+str(i)+'.png',disp)
+    for i in range(len(images_tensor[:200])):
+        print(labels_to_text(gt_padded_txt[i]))
+        disp = images_tensor[i]*255.0
+        cv2.imwrite('dataset/generated_data/'+str(i)+'.png',disp)
 
     # save np arrays to hard disk so as not to generate them from scratch in the begining of each training session
     h5 = h5py.File('dataset/dataset.h5', 'w')
