@@ -36,7 +36,7 @@ TEST_SAMPLES = dataset['images'].shape[0]-TRAIN_SAMPLES
 print("Test samples >>> ", TEST_SAMPLES)
 # utils
 
-letters = araby.LETTERS+u' ٠١٢٣٤٥٦٧٨٩,()/\-'
+letters = u' ٠١٢٣٤٥٦٧٨٩,()/\-'
 
 
 def labels_to_text(labels):

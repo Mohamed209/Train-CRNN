@@ -8,8 +8,6 @@ AUG_SAMPLES = 4
 seq = iaa.OneOf([
     # Add gaussian noise
     iaa.AdditiveGaussianNoise(scale=(30, 60)),
-    # Change images to grayscale and overlay them with the original image by varying strengths, effectively removing 0 to 100% of the color
-    iaa.Grayscale(alpha=(0.0, 1.0)),
     # Motion Blur
     iaa.MotionBlur(angle=(0, 288)),
     # Add a value to all pixels in an image
@@ -17,12 +15,14 @@ seq = iaa.OneOf([
     # Making the image darker or brighter
     iaa.Multiply((0.5, 1.5)),
     # Add salt an pepper noise
-    iaa.SaltAndPepper((0.03, 0.05))
+    iaa.SaltAndPepper((0.03, 0.05)),
+    # jpeg compression
+    iaa.JpegCompression(compression=(75, 99))
 ])
 data = sorted(os.listdir(DATA_PATH))
 for sample in data:
     print("loaded >>>", sample)
-    if sample.split('.')[-1] == 'png':
+    if sample.split('.')[-1] in ['png','jpg','jpeg','tif']:
         img = cv2.imread(DATA_PATH+sample)
         for i in range(AUG_SAMPLES):
             aug = seq.augment_image(image=img)
