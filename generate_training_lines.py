@@ -131,7 +131,7 @@ arabic_generator_nums = GeneratorFromStrings(
 
 
 img_h = 32
-img_w = 132
+img_w = 432
 max_label_len = 15
 
 

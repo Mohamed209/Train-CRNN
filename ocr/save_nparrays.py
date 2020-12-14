@@ -21,7 +21,7 @@ def text_to_labels(text):
 
 # data loader
 img_h = 32
-img_w = 128
+img_w = 432
 # data loader script expects data to be found in folder as pairs of images , txt files contain labels
 DATA_PATH = '../dataset/generated_data/'
 data = sorted(os.listdir(DATA_PATH))
@@ -35,7 +35,7 @@ for sample in data:
             word = s.readline()
             try:
                 text_to_labels(word)
-                word = get_display(word)
+                #word = get_display(word)
                 print(word)
                 text.append(word)
                 label_length.append(len(word))
