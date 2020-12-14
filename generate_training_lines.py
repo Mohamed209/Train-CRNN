@@ -22,7 +22,7 @@ import h5py
 
 ara_letters = araby.LETTERS+u' ٠١٢٣٤٥٦٧٨٩,()/\-'
 eng_letters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,()/\- '
-letters = ara_letters
+letters = u' ٠١٢٣٤٥٦٧٨٩,()/\-'
 
 SHADOW_DISTRIBUTION = [1, 0]
 SHADOW_WEIGHT = [0.3, 0.7]
@@ -146,10 +146,10 @@ if __name__ == "__main__":
         for (img, lbl) in tqdm(gens[i]):
             try:
                 text_to_labels(lbl)
-                adjlabel = get_display(lbl)
+                #adjlabel = get_display(lbl)
                 ID = str(uuid.uuid4())
                 with open(SAVE_PATH+ID+'.gt', 'w',encoding='utf-8') as l:
-                    l.write(adjlabel)
+                    l.write(lbl)
             except ValueError:
                 print("contain toxic chars ", [char for char in lbl])
                 continue
