@@ -48,7 +48,7 @@ opt-einsum==3.2.0
 parso==0.6.2
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==7.1.2
+Pillow==8.3.2
 pkg-resources==0.0.0
 prompt-toolkit==2.0.10
 protobuf==3.11.3
